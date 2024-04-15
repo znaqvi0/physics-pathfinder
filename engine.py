@@ -32,6 +32,7 @@ class Path:
         self.done = True
 
     def varied_copy(self, sigma):
+        # TODO chance to add/remove a point (change n_waypoints)
         path = Path(self.start_point, self.target_point, self.num_waypoints, self.obstacles, self.color)
         path.points = [self.start_point]
         for point in [point for point in self.points if point not in [self.start_point, self.target_point]]:
@@ -82,7 +83,6 @@ class Ball:
         return mag(self.pos - target_pos)
 
     def calculate_fitness(self):
-        # TODO -(time taken) - (distance from target (near 0 if did not hit a target))
         score = -self.t - self.distance_from_target(field.TARGET_POS)
         return score
 
@@ -90,7 +90,7 @@ class Ball:
         return -0.015 * norm(self.v)
 
     def force(self):
-        return self.friction()  # TODO change
+        return self.friction()
 
     def collide_with_wall(self, wall_norm, sigma):
         randomized_wall_norm = wall_norm.rotate(random.gauss(0, sigma), degrees=True)

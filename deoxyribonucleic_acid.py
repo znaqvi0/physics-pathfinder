@@ -71,22 +71,21 @@ def random_path():
     return Path(field.START_POS, field.TARGET_POS, 5, [], color=(random.uniform(0, 255), random.uniform(0, 255), random.uniform(0, 255)))
 
 
-# constants  # TODO change to robot dimensions/mass
+# constants (change to robot dimensions/mass)
 pos0 = field.START_POS
 r = 0.021335
 m = 0.045
 
-# TODO adjust
 initial_population = 10
 population = 100
 num_families = 5
 
 sigma = 5
-sigma_rate = 0.9  # TODO adjust
+sigma_rate = 0.9
 
 generation = 1
 
-# best_ball = Ball(Vec(), Vec(), 1, 1)  # TODO change object type
+# best_ball = Ball(Vec(), Vec(), 1, 1)
 
 families = []
 
@@ -99,7 +98,7 @@ def all_families_done(families):
 
 
 for i in range(num_families):
-    families.append(Family(population//num_families, sigma, sigma_rate).populate(seed=random_path()))  # TODO change Family params
+    families.append(Family(population//num_families, sigma, sigma_rate).populate(seed=random_path()))
 
 draw_course()
 running = False
@@ -113,14 +112,10 @@ while True:
             if event.key == p.K_SPACE:
                 running = not running
 
-    # screen.fill((150, 210, 255))  # comment/uncomment to enable/disable trail
-    # draw_course()
     if running:
         for i in range(1):  # steps multiple times every frame
-            # print(families[0].paths[0].points)
             for family in families:
                 family.update()
-            t += dt
 
         # if all_families_done(families):
         families = sorted(families, key=lambda fam: fam.family_score, reverse=True)
@@ -134,9 +129,8 @@ while True:
                     family.population = population // len(families)
 
         # best_path = sorted(families, key=lambda fam: fam.best_path.fitness, reverse=True)[0].best_path
-        # sigma *= 0.9  # this will eventually family-dependent, just for display purposes
         for family in families:
-            family.paths = family.next_gen()  # TODO change
+            family.paths = family.next_gen()
 
             screen.fill(screen_color)
             draw_course()
@@ -147,6 +141,5 @@ while True:
             draw_text("best family score: %.5f" % families[0].family_score, (20, 40))
             draw_text("number of families: %.0i" % len(families), (20, 60))
 
-
     p.display.flip()
-    p.time.Clock().tick(100)  # caps frame rate at 100
+    p.time.Clock().tick()  # caps frame rate at 100

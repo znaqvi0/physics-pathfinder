@@ -2,7 +2,6 @@ import random
 
 from vectors import *
 
-# TODO change
 # TODO obstacle class (similar to moat)
 WIDTH = 16.4846
 HEIGHT = 8.1026
