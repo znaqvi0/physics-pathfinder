@@ -24,23 +24,33 @@ class Path:
             vec = lambda: Vec(random.uniform(field.LEFT_WALL, field.RIGHT_WALL),
                               random.uniform(field.BOTTOM_WALL, field.TOP_WALL))
             vector = vec()
-            while self.obstacles.get_obstacle(vector.x, vector.y) == 1:
-                vector = vec()
+            if type(self.obstacles) == field.ObstacleGrid:
+                while self.obstacles.get_obstacle(vector.x, vector.y) == 1:
+                    vector = vec()
             waypoints.append(vector)
         waypoints = sorted(waypoints, key=lambda x: mag(x - field.TARGET_POS), reverse=True)
         self.points.extend(waypoints)
         self.points.append(self.target_point)
 
     def find_intersections(self):
-        # TODO find actual intersection point instead of returning p1
-        for i in range(1, len(self.points)):
-            p1, p2 = self.points[i-1], self.points[i]
-            for row in range(self.obstacles.num_squares_x):
-                for col in range(self.obstacles.num_squares_y):
-                    if self.obstacles.squares[row][col] == 1:
-                        rect_top_left = self.obstacles.get_obstacle_pos(row, col)
-                        if segment_rect_intersect(p1, p2, rect_top_left, self.obstacles.square_dimension, self.obstacles.square_dimension):
-                            return rect_top_left  # approximates intersection
+        if type(self.obstacles) == field.ObstacleGrid:
+            for i in range(1, len(self.points)):
+                p1, p2 = self.points[i-1], self.points[i]
+                for row in range(self.obstacles.num_squares_x):
+                    for col in range(self.obstacles.num_squares_y):
+                        if self.obstacles.squares[row][col] == 1:
+                            rect_top_left = self.obstacles.get_obstacle_pos(row, col)
+                            if segment_rect_intersect(p1, p2, rect_top_left, self.obstacles.square_dimension, self.obstacles.square_dimension):
+                                return rect_top_left  # approximates intersection
+
+        elif type(self.obstacles) == field.ObstacleMap:
+            for i in range(1, len(self.points)):
+                p1, p2 = self.points[i-1], self.points[i]
+                for poly in self.obstacles.polygons:
+                    for i in range(1, len(poly)):
+                        p3, p4 = poly[i - 1], poly[i]
+                        if intersect(p1, p2, p3, p4):
+                            return (p1+p2+p3+p4)/4  # intersection is somewhat close to this
         return self.points[-1]
 
     def calculate_fitness(self):
@@ -61,7 +71,10 @@ class Path:
             vec = Vec(random.gauss(point.x, sigma), random.gauss(point.y, sigma))
             while True:
                 within_bounds = field.LEFT_WALL < vec.x < field.RIGHT_WALL and field.BOTTOM_WALL < vec.y < field.TOP_WALL
-                not_hitting_obstacles = self.obstacles.get_obstacle(vec.x, vec.y) == 0
+                if type(self.obstacles) == field.ObstacleGrid:
+                    not_hitting_obstacles = self.obstacles.get_obstacle(vec.x, vec.y) == 0
+                else:
+                    not_hitting_obstacles = True
                 if within_bounds and not_hitting_obstacles:
                     path.points.append(vec)
                     break

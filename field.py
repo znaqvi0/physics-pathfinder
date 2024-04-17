@@ -52,6 +52,22 @@ class ObstacleGrid:
         return Vec(self.square_dimension, self.square_dimension)
 
 
+class ObstacleMap:
+    def __init__(self):
+        self.polygons = []
+        self.new_poly()
+
+    def add_point(self, x, y):
+        if len(self.polygons[-1]) > 0:
+            if mag(self.polygons[-1][-1] - Vec(x, y)) > 0.5:
+                self.polygons[-1].append(Vec(x, y))
+        else:
+            self.polygons[-1].append(Vec(x, y))
+
+    def new_poly(self):
+        self.polygons.append([])
+
+
 if __name__ == "__main__":
     grid = ObstacleGrid(GRID_DIMENSION)
     grid.add_obstacle(7.5, 5)
