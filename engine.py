@@ -19,16 +19,36 @@ class Path:
         self.populate()
 
     def populate(self):
+        waypoints = []
         for i in range(self.num_waypoints):
-            vec = lambda: Vec(random.uniform(field.LEFT_WALL, field.RIGHT_WALL), random.uniform(field.BOTTOM_WALL, field.TOP_WALL))
+            vec = lambda: Vec(random.uniform(field.LEFT_WALL, field.RIGHT_WALL),
+                              random.uniform(field.BOTTOM_WALL, field.TOP_WALL))
             vector = vec()
             while self.obstacles.get_obstacle(vector.x, vector.y) == 1:
                 vector = vec()
-            self.points.append(vector)
+            waypoints.append(vector)
+        waypoints = sorted(waypoints, key=lambda x: mag(x - field.TARGET_POS), reverse=False)
+
+        self.points.extend(waypoints)
         self.points.append(self.target_point)
 
+    def find_intersections(self):
+        # TODO find actual intersection point instead of returning p1
+        for i in range(1, len(self.points)):
+            p1, p2 = self.points[i-1], self.points[i]
+            for row in range(self.obstacles.num_squares_x):
+                for col in range(self.obstacles.num_squares_y):
+                    if self.obstacles.squares[row][col] == 1:
+                        rect_top_left = self.obstacles.get_obstacle_pos(row, col)
+                        if segment_rect_intersect(p1, p2, rect_top_left, self.obstacles.square_dimension, self.obstacles.square_dimension):
+                            return p1
+        return None
+
     def calculate_fitness(self):
-        return -sum([mag(self.points[i] - self.points[i-1]) for i in range(len(self.points))])
+        intersects = self.find_intersections()
+        intersection_score = 2 if intersects is not None else 0
+        length_score = sum([mag(self.points[i] - self.points[i - 1]) for i in range(len(self.points))])
+        return -length_score - 100*intersection_score
 
     def update(self):
         self.fitness = self.calculate_fitness()
@@ -49,6 +69,24 @@ class Path:
                 vec = Vec(random.gauss(point.x, sigma), random.gauss(point.y, sigma))
         path.points.append(self.target_point)
         return path
+
+
+# https://stackoverflow.com/questions/3838329/how-can-i-check-if-two-segments-intersect
+def ccw(A, B, C):  # works for Vec because Vec has y and y attributes
+    return (C.y - A.y) * (B.x - A.x) > (B.y - A.y) * (C.x - A.x)
+
+
+# Return true if line segments AB and CD intersect
+def intersect(A, B, C, D):
+    return ccw(A, C, D) != ccw(B, C, D) and ccw(A, B, C) != ccw(A, B, D)
+
+
+def segment_rect_intersect(A, B, rect_top_left: Vec, rect_width, rect_height):  # A, B: line segment points
+    tl = rect_top_left
+    tr = rect_top_left + Vec(rect_width, 0)
+    bl = tl + Vec(0, -rect_height)
+    br = tr + Vec(0, -rect_height)
+    return intersect(A, B, tl, tr) or intersect(A, B, tr, bl) or intersect(A, B, bl, br) or intersect(A, B, br, tl)
 
 
 class Ball:

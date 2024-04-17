@@ -137,8 +137,6 @@ while True:
         obst_x, obst_y = get_mouse_xy_meters()
         obstacles.add_obstacle(obst_x, obst_y)
         draw_course()
-        # print(get_mouse_xy_meters())
-        # print(obstacles.squares.T)
     elif mouse_pressed[2]:
         obst_x, obst_y = get_mouse_xy_meters()
         obstacles.remove_obstacle(obst_x, obst_y)
@@ -153,7 +151,7 @@ while True:
         families = sorted(families, key=lambda fam: fam.family_score, reverse=True)
         print([fam.family_score for fam in families])
 
-        if len(families) > 1 and families[0].sigma < 0.0005:
+        if len(families) > 1 and families[0].sigma < 0.00005:
             if generation % 1 == 0:  # kill off a family every _ generations (originally % 5 then 2)
                 families.remove(families[-1])
 
@@ -161,17 +159,17 @@ while True:
                     family.population = population // len(families)
 
         # best_path = sorted(families, key=lambda fam: fam.best_path.fitness, reverse=True)[0].best_path
+        screen.fill(screen_color)
+        draw_course()
         for family in families:
             family.paths = family.next_gen()
 
-            screen.fill(screen_color)
-            draw_course()
             for path in family.paths:
                 draw_path(path)
 
-            draw_text("sigma: %.10f" % families[0].sigma, (20, 20))
-            draw_text("best family score: %.5f" % families[0].family_score, (20, 40))
-            draw_text("number of families: %.0i" % len(families), (20, 60))
+        draw_text("sigma: %.10f" % families[0].sigma, (20, 20))
+        draw_text("best family score: %.5f" % families[0].family_score, (20, 40))
+        draw_text("number of families: %.0i" % len(families), (20, 60))
 
     p.display.flip()
     p.time.Clock().tick()  # caps frame rate at 100
