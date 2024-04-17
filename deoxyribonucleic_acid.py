@@ -25,6 +25,8 @@ origin = x0, y0 = WIDTH / 2 - field.WIDTH/2*scale, HEIGHT / 2 + field.HEIGHT/2*s
 field_img = p.image.load("frc2024.png").convert_alpha()  # https://www.chiefdelphi.com/t/2024-crescendo-top-down-field-renders/447764
 field_img = p.transform.scale(field_img, (field.WIDTH * scale, field.HEIGHT * scale))
 
+obstacles = field.ObstacleGrid(0.5)  # this is passed in as a reference; changing this changes all paths that use it
+
 
 def ball_xy(ball):
     return float(origin[0] + ball.pos.x * scale), float(origin[1] - ball.pos.y * scale)
@@ -56,10 +58,19 @@ def draw_rect(color, left_x, top_y, width, height):
     p.draw.rect(screen, color, (x0 + left_x * scale, y0 - top_y * scale, width * scale, height * scale))
 
 
+def draw_obstacles(_obstacles: field.ObstacleGrid):
+    for i in range(_obstacles.num_squares_x):
+        for j in range(_obstacles.num_squares_y):
+            if _obstacles.squares[i][j] == 1:
+                _pos = _obstacles.get_obstacle_pos(i, j)
+                draw_rect((255, 0, 0), _pos.x, _pos.y, _obstacles.square_dimension, _obstacles.square_dimension)
+
+
 def draw_course():
     screen.fill(screen_color)
     draw_rect((0, 200, 50), field.LEFT_WALL, field.TOP_WALL, field.WIDTH, field.HEIGHT)
     screen.blit(field_img, (x0 + field.LEFT_WALL*scale, y0 - field.TOP_WALL*scale))
+    draw_obstacles(obstacles)
 
 
 def draw_path(path):
@@ -68,7 +79,16 @@ def draw_path(path):
 
 
 def random_path():
-    return Path(field.START_POS, field.TARGET_POS, 5, [], color=(random.uniform(0, 255), random.uniform(0, 255), random.uniform(0, 255)))
+    return Path(field.START_POS, field.TARGET_POS, 5, obstacles,
+                color=(random.uniform(0, 255), random.uniform(0, 255), random.uniform(0, 255)))
+
+
+def get_mouse_xy_meters():
+    x, y = p.mouse.get_pos()
+    newx, newy = x - x0, y0 - y
+    newx *= 1/scale  # scale converts meters to pixels
+    newy *= 1/scale  # 1/scale converts pixels to meters
+    return newx, newy
 
 
 # constants (change to robot dimensions/mass)
@@ -111,6 +131,18 @@ while True:
         elif event.type == p.KEYDOWN:
             if event.key == p.K_SPACE:
                 running = not running
+
+    mouse_pressed = p.mouse.get_pressed(num_buttons=3)
+    if mouse_pressed[0]:
+        obst_x, obst_y = get_mouse_xy_meters()
+        obstacles.add_obstacle(obst_x, obst_y)
+        draw_course()
+        # print(get_mouse_xy_meters())
+        # print(obstacles.squares.T)
+    elif mouse_pressed[2]:
+        obst_x, obst_y = get_mouse_xy_meters()
+        obstacles.remove_obstacle(obst_x, obst_y)
+        draw_course()
 
     if running:
         for i in range(1):  # steps multiple times every frame

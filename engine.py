@@ -20,8 +20,11 @@ class Path:
 
     def populate(self):
         for i in range(self.num_waypoints):
-            vec = Vec(random.uniform(field.LEFT_WALL, field.RIGHT_WALL), random.uniform(field.BOTTOM_WALL, field.TOP_WALL))
-            self.points.append(vec)
+            vec = lambda: Vec(random.uniform(field.LEFT_WALL, field.RIGHT_WALL), random.uniform(field.BOTTOM_WALL, field.TOP_WALL))
+            vector = vec()
+            while self.obstacles.get_obstacle(vector.x, vector.y) == 1:
+                vector = vec()
+            self.points.append(vector)
         self.points.append(self.target_point)
 
     def calculate_fitness(self):
@@ -38,7 +41,9 @@ class Path:
         for point in [point for point in self.points if point not in [self.start_point, self.target_point]]:
             vec = Vec(random.gauss(point.x, sigma), random.gauss(point.y, sigma))
             while True:
-                if field.LEFT_WALL < vec.x < field.RIGHT_WALL and field.BOTTOM_WALL < vec.y < field.TOP_WALL:
+                within_bounds = field.LEFT_WALL < vec.x < field.RIGHT_WALL and field.BOTTOM_WALL < vec.y < field.TOP_WALL
+                not_hitting_obstacles = self.obstacles.get_obstacle(vec.x, vec.y) == 0
+                if within_bounds and not_hitting_obstacles:
                     path.points.append(vec)
                     break
                 vec = Vec(random.gauss(point.x, sigma), random.gauss(point.y, sigma))
