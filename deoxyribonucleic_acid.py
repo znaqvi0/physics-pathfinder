@@ -79,7 +79,7 @@ def draw_path(path):
 
 
 def random_path():
-    return Path(field.START_POS, field.TARGET_POS, 5, obstacles,
+    return Path(field.START_POS, field.TARGET_POS, 10, obstacles,
                 color=(random.uniform(0, 255), random.uniform(0, 255), random.uniform(0, 255)))
 
 
@@ -97,10 +97,10 @@ r = 0.021335
 m = 0.045
 
 initial_population = 10
-population = 100
-num_families = 5
+population = 1000
+num_families = 1
 
-sigma = 5
+sigma = 2
 sigma_rate = 0.9
 
 generation = 1

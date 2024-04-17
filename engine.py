@@ -27,8 +27,7 @@ class Path:
             while self.obstacles.get_obstacle(vector.x, vector.y) == 1:
                 vector = vec()
             waypoints.append(vector)
-        waypoints = sorted(waypoints, key=lambda x: mag(x - field.TARGET_POS), reverse=False)
-
+        waypoints = sorted(waypoints, key=lambda x: mag(x - field.TARGET_POS), reverse=True)
         self.points.extend(waypoints)
         self.points.append(self.target_point)
 
@@ -41,12 +40,12 @@ class Path:
                     if self.obstacles.squares[row][col] == 1:
                         rect_top_left = self.obstacles.get_obstacle_pos(row, col)
                         if segment_rect_intersect(p1, p2, rect_top_left, self.obstacles.square_dimension, self.obstacles.square_dimension):
-                            return p1
-        return None
+                            return rect_top_left  # approximates intersection
+        return self.points[-1]
 
     def calculate_fitness(self):
         intersects = self.find_intersections()
-        intersection_score = 2 if intersects is not None else 0
+        intersection_score = 2 if mag(intersects - field.TARGET_POS) != 0 else 0
         length_score = sum([mag(self.points[i] - self.points[i - 1]) for i in range(len(self.points))])
         return -length_score - 100*intersection_score
 
@@ -58,7 +57,7 @@ class Path:
         # TODO chance to add/remove a point (change n_waypoints)
         path = Path(self.start_point, self.target_point, self.num_waypoints, self.obstacles, self.color)
         path.points = [self.start_point]
-        for point in [point for point in self.points if point not in [self.start_point, self.target_point]]:
+        for point in [pt for pt in self.points if pt not in [self.start_point, self.target_point]]:  # excluding start & end:  # excluding start & end
             vec = Vec(random.gauss(point.x, sigma), random.gauss(point.y, sigma))
             while True:
                 within_bounds = field.LEFT_WALL < vec.x < field.RIGHT_WALL and field.BOTTOM_WALL < vec.y < field.TOP_WALL
@@ -72,7 +71,7 @@ class Path:
 
 
 # https://stackoverflow.com/questions/3838329/how-can-i-check-if-two-segments-intersect
-def ccw(A, B, C):  # works for Vec because Vec has y and y attributes
+def ccw(A, B, C):  # works for Vec because Vec has x and y attributes
     return (C.y - A.y) * (B.x - A.x) > (B.y - A.y) * (C.x - A.x)
 
 
@@ -142,7 +141,6 @@ class Ball:
         self.v *= 1 - 0.2 * abs(norm(self.v).dot(randomized_wall_norm))
 
     def check_walls(self):
-        # TODO code similar to moat for forbidden areas
         if self.pos.x < field.LEFT_WALL:
             self.collide_with_wall(field.LEFT_WALL_NORM, field.WALL_RANDOMNESS())
         elif self.pos.x > field.RIGHT_WALL:
