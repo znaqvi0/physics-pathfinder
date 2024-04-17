@@ -25,7 +25,7 @@ origin = x0, y0 = WIDTH / 2 - field.WIDTH/2*scale, HEIGHT / 2 + field.HEIGHT/2*s
 field_img = p.image.load("frc2024.png").convert_alpha()  # https://www.chiefdelphi.com/t/2024-crescendo-top-down-field-renders/447764
 field_img = p.transform.scale(field_img, (field.WIDTH * scale, field.HEIGHT * scale))
 
-obstacles = field.ObstacleGrid(0.5)  # this is passed in as a reference; changing this changes all paths that use it
+obstacles = field.ObstacleGrid(0.75)  # this is passed in as a reference; changing this changes all paths that use it
 
 
 def ball_xy(ball):
@@ -58,12 +58,20 @@ def draw_rect(color, left_x, top_y, width, height):
     p.draw.rect(screen, color, (x0 + left_x * scale, y0 - top_y * scale, width * scale, height * scale))
 
 
+def draw_translucent(color, alpha, pos, width, height):
+    s = p.Surface((width * scale, height * scale))
+    s.set_alpha(alpha)
+    s.fill(color)
+    screen.blit(s, (x0 + pos.x * scale, y0 - pos.y * scale))
+
+
 def draw_obstacles(_obstacles: field.ObstacleGrid):
     for i in range(_obstacles.num_squares_x):
         for j in range(_obstacles.num_squares_y):
             if _obstacles.squares[i][j] == 1:
                 _pos = _obstacles.get_obstacle_pos(i, j)
-                draw_rect((255, 0, 0), _pos.x, _pos.y, _obstacles.square_dimension, _obstacles.square_dimension)
+                # draw_rect((255, 0, 0), _pos.x, _pos.y, _obstacles.square_dimension, _obstacles.square_dimension)
+                draw_translucent((255, 0, 0), 64, _pos, obstacles.square_dimension, obstacles.square_dimension)
 
 
 def draw_course():
@@ -96,8 +104,8 @@ pos0 = field.START_POS
 r = 0.021335
 m = 0.045
 
-initial_population = 10
-population = 1000
+initial_population = 1000
+population = 100
 num_families = 1
 
 sigma = 2
@@ -149,7 +157,7 @@ while True:
 
         # if all_families_done(families):
         families = sorted(families, key=lambda fam: fam.family_score, reverse=True)
-        print([fam.family_score for fam in families])
+        # print([fam.family_score for fam in families])
 
         if len(families) > 1 and families[0].sigma < 0.00005:
             if generation % 1 == 0:  # kill off a family every _ generations (originally % 5 then 2)
@@ -157,6 +165,8 @@ while True:
 
                 for family in families:
                     family.population = population // len(families)
+        # elif families[0].sigma < 0.005:
+        #     running = False
 
         # best_path = sorted(families, key=lambda fam: fam.best_path.fitness, reverse=True)[0].best_path
         screen.fill(screen_color)
@@ -170,6 +180,7 @@ while True:
         draw_text("sigma: %.10f" % families[0].sigma, (20, 20))
         draw_text("best family score: %.5f" % families[0].family_score, (20, 40))
         draw_text("number of families: %.0i" % len(families), (20, 60))
+        draw_text("generation: %.0i" % families[0].generations_passed, (20, 80))
 
     p.display.flip()
     p.time.Clock().tick()  # caps frame rate at 100
