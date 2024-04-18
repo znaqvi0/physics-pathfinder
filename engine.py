@@ -19,38 +19,19 @@ class Path:
         self.populate()
 
     def populate(self):
-        waypoints = []
+        waypoints = [self.start_point]
+        vec_generator = lambda: Vec(random.uniform(field.LEFT_WALL, field.RIGHT_WALL), random.uniform(field.BOTTOM_WALL, field.TOP_WALL))
         for i in range(self.num_waypoints):
-            vec = lambda: Vec(random.uniform(field.LEFT_WALL, field.RIGHT_WALL),
-                              random.uniform(field.BOTTOM_WALL, field.TOP_WALL))
-            vector = vec()
-            if type(self.obstacles) == field.ObstacleGrid:
-                while self.obstacles.get_obstacle(vector.x, vector.y) == 1:
-                    vector = vec()
-            waypoints.append(vector)
-        waypoints = sorted(waypoints, key=lambda x: mag(x - field.TARGET_POS), reverse=True)
+            waypoints.append(next_vector(waypoints[i], self.obstacles, vec_generator))
+        # waypoints = sorted(waypoints, key=lambda x: mag(x - field.TARGET_POS), reverse=True)
         self.points.extend(waypoints)
         self.points.append(self.target_point)
 
     def find_intersections(self):
-        if type(self.obstacles) == field.ObstacleGrid:
-            for i in range(1, len(self.points)):
-                p1, p2 = self.points[i-1], self.points[i]
-                for row in range(self.obstacles.num_squares_x):
-                    for col in range(self.obstacles.num_squares_y):
-                        if self.obstacles.squares[row][col] == 1:
-                            rect_top_left = self.obstacles.get_obstacle_pos(row, col)
-                            if segment_rect_intersect(p1, p2, rect_top_left, self.obstacles.square_dimension, self.obstacles.square_dimension):
-                                return rect_top_left  # approximates intersection
-
-        elif type(self.obstacles) == field.ObstacleMap:
-            for i in range(1, len(self.points)):
-                p1, p2 = self.points[i-1], self.points[i]
-                for poly in self.obstacles.polygons:
-                    for i in range(1, len(poly)):
-                        p3, p4 = poly[i - 1], poly[i]
-                        if intersect(p1, p2, p3, p4):
-                            return (p1+p2+p3+p4)/4  # intersection is somewhat close to this
+        for i in range(1, len(self.points)):
+            p1, p2 = self.points[i-1], self.points[i]
+            if intersect_map(p1, p2, self.obstacles):
+                return (p1+p2)/2  # intersection is somewhat close to this
         return self.points[-1]
 
     def calculate_fitness(self):
@@ -68,17 +49,8 @@ class Path:
         path = Path(self.start_point, self.target_point, self.num_waypoints, self.obstacles, self.color)
         path.points = [self.start_point]
         for point in [pt for pt in self.points if pt not in [self.start_point, self.target_point]]:  # excluding start & end:  # excluding start & end
-            vec = Vec(random.gauss(point.x, sigma), random.gauss(point.y, sigma))
-            while True:
-                within_bounds = field.LEFT_WALL < vec.x < field.RIGHT_WALL and field.BOTTOM_WALL < vec.y < field.TOP_WALL
-                if type(self.obstacles) == field.ObstacleGrid:
-                    not_hitting_obstacles = self.obstacles.get_obstacle(vec.x, vec.y) == 0
-                else:
-                    not_hitting_obstacles = True
-                if within_bounds and not_hitting_obstacles:
-                    path.points.append(vec)
-                    break
-                vec = Vec(random.gauss(point.x, sigma), random.gauss(point.y, sigma))
+            vec = lambda: Vec(random.gauss(point.x, sigma), random.gauss(point.y, sigma))
+            path.points.append(next_vector(point, self.obstacles, vec))
         path.points.append(self.target_point)
         return path
 
@@ -91,6 +63,25 @@ def ccw(A, B, C):  # works for Vec because Vec has x and y attributes
 # Return true if line segments AB and CD intersect
 def intersect(A, B, C, D):
     return ccw(A, C, D) != ccw(B, C, D) and ccw(A, B, C) != ccw(A, B, D)
+
+
+def intersect_map(A, B, map: field.ObstacleMap):
+    for poly in map.polygons:
+        for i in range(len(poly) - 1):
+            C, D = poly[i], poly[i+1]
+            if intersect(A, B, C, D):
+                return True
+    return False
+
+
+def next_vector(point, obstacles, vec_generator):
+    vector = vec_generator()
+    p1, p2 = point, vector
+    in_field = lambda: field.LEFT_WALL < vector.x < field.RIGHT_WALL and field.BOTTOM_WALL < vector.y < field.TOP_WALL
+    while intersect_map(p1, p2, obstacles) or not in_field():
+        vector = vec_generator()
+        p1, p2 = point, vector
+    return vector
 
 
 def segment_rect_intersect(A, B, rect_top_left: Vec, rect_width, rect_height):  # A, B: line segment points

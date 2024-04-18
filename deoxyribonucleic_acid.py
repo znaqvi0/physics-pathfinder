@@ -66,18 +66,10 @@ def draw_translucent(color, alpha, pos, width, height):
     screen.blit(s, (x0 + pos.x * scale, y0 - pos.y * scale))
 
 
-def draw_obstacles(_obstacles: field.ObstacleGrid | field.ObstacleMap):
-    if type(_obstacles) == field.ObstacleGrid:
-        for i in range(_obstacles.num_squares_x):
-            for j in range(_obstacles.num_squares_y):
-                if _obstacles.squares[i][j] == 1:
-                    _pos = _obstacles.get_obstacle_pos(i, j)
-                    # draw_rect((255, 0, 0), _pos.x, _pos.y, _obstacles.square_dimension, _obstacles.square_dimension)
-                    draw_translucent((255, 0, 0), 64, _pos, obstacles.square_dimension, obstacles.square_dimension)
-    elif type(_obstacles) == field.ObstacleMap:
-        for poly in _obstacles.polygons:
-            for i in range(1, len(poly)):
-                draw_line(poly[i-1], poly[i], (255, 0, 0))
+def draw_obstacles(_obstacles: field.ObstacleMap):
+    for poly in _obstacles.polygons:
+        for i in range(1, len(poly)):
+            draw_line(poly[i-1], poly[i], (255, 0, 0))
 
 
 def draw_course():
@@ -114,7 +106,7 @@ initial_population = 1000
 population = 100
 num_families = 1
 
-sigma = 1
+sigma = 10
 sigma_rate = 0.9
 
 generation = 1
@@ -131,8 +123,8 @@ def all_families_done(families):
     return True
 
 
-for i in range(num_families):
-    families.append(Family(population//num_families, sigma, sigma_rate).populate(seed=random_path()))
+# for i in range(num_families):
+#     families.append(Family(population//num_families, sigma, sigma_rate).populate(seed=random_path()))
 
 # TODO convert grid to a list of larger rectangles at the start (fewer checks = more optimized)
 # or make the user draw polygons (list of points) instead
@@ -149,13 +141,13 @@ while True:
             if event.key == p.K_SPACE:
                 running = not running
 
+                for i in range(num_families):  # populate once all obstacles are drawn
+                    families.append(Family(population // num_families, sigma, sigma_rate).populate(seed=random_path()))
+
     mouse_pressed = p.mouse.get_pressed(num_buttons=3)
     if mouse_pressed[0]:
         obst_x, obst_y = get_mouse_xy_meters()
-        if type(obstacles) == field.ObstacleGrid:
-            obstacles.add_obstacle(obst_x, obst_y)
-        elif type(obstacles) == field.ObstacleMap:
-            obstacles.add_point(obst_x, obst_y)
+        obstacles.add_point(obst_x, obst_y)
         draw_course()
     # elif mouse_pressed[2]:  # TODO remove closest point to cursor
     #     obst_x, obst_y = get_mouse_xy_meters()
@@ -179,8 +171,6 @@ while True:
 
                 for family in families:
                     family.population = population // len(families)
-        # elif families[0].sigma < 0.005:
-        #     running = False
 
         # best_path = sorted(families, key=lambda fam: fam.best_path.fitness, reverse=True)[0].best_path
         screen.fill(screen_color)
