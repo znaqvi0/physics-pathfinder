@@ -114,10 +114,6 @@ class Ball:
         self.color = color
         self.done = False
         self.t = 0
-        self.max_height = 0
-        self.range = 0
-
-        self.fitness = 0
 
     def __repr__(self):
         return f"v0={self.v0}"
@@ -126,7 +122,6 @@ class Ball:
         ball = Ball(self.pos0,
                     Vec(random.gauss(self.v0.x, sigma), random.gauss(self.v0.y, sigma)),
                     self.r, self.m, self.color)
-        # ball.v = Vec(random.gauss(self.v0.x, sigma), random.gauss(self.v0.y, sigma))
         ball.v0 = ball.v.copy()
         return ball
 
@@ -138,15 +133,8 @@ class Ball:
     def distance_from_target(self, target_pos):
         return mag(self.pos - target_pos)
 
-    def calculate_fitness(self):
-        score = -self.t - self.distance_from_target(field.TARGET_POS)
-        return score
-
-    def friction(self):
-        return -0.015 * norm(self.v)
-
-    def force(self):
-        return self.friction()
+    def force(self):  # path following algorithm (force toward next point + wheel friction)
+        return Vec()
 
     def collide_with_wall(self, wall_norm, sigma):
         randomized_wall_norm = wall_norm.rotate(random.gauss(0, sigma), degrees=True)
@@ -165,14 +153,11 @@ class Ball:
             self.collide_with_wall(field.TOP_WALL_NORM, field.WALL_RANDOMNESS())
 
     def update(self):
-        if mag(self.v) > 0.005 and not self.in_hole():  # TODO and not self.close_enough() (to target)
+        if mag(self.v) > 0.005:  # check if close enough to target
             self.check_walls()
             self.move()
             self.t += dt
-        else:
-            if not self.done:
-                self.fitness = self.calculate_fitness()
-                string = ""
-                string += str(self.fitness)
-                # print(string)
+            return
+        elif not self.done:
+            # code for when ball is done
             self.done = True
