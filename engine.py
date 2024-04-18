@@ -11,7 +11,7 @@ class Path:
         self.start_point = start
         self.target_point = target
         self.num_waypoints = n_waypoints
-        self.points = [start]
+        self.points = []  # [start]
         self.obstacles = obstacles
         self.color = color
         self.fitness = -999999
@@ -20,11 +20,21 @@ class Path:
 
     def populate(self):  # TODO check the line b/w last waypoint and target point for intersections
         waypoints = [self.start_point]
+        self.points = []
         vec_generator = lambda: Vec(random.uniform(field.LEFT_WALL, field.RIGHT_WALL), random.uniform(field.BOTTOM_WALL, field.TOP_WALL))
         for i in range(self.num_waypoints):
             waypoints.append(next_vector(waypoints[i], self.obstacles, vec_generator))
         self.points.extend(waypoints)
         self.points.append(self.target_point)
+        if self.intersects_map():
+            self.populate()
+
+    def intersects_map(self):
+        for i in range(len(self.points) - 1):
+            p1, p2 = self.points[i], self.points[i+1]
+            if intersect_map(p1, p2, self.obstacles):
+                return True
+        return False
 
     def find_intersections(self):
         for i in range(1, len(self.points)):
@@ -47,8 +57,10 @@ class Path:
         # TODO chance to add/remove a point (change n_waypoints)
         path = Path(self.start_point, self.target_point, self.num_waypoints, self.obstacles, self.color)
         path.points = [self.start_point]
-        for point in [pt for pt in self.points if pt not in [self.start_point, self.target_point]]:  # excluding start & end:  # excluding start & end
-            vec = lambda: Vec(random.gauss(point.x, sigma), random.gauss(point.y, sigma))
+        vec = lambda: Vec(random.gauss(point.x, sigma), random.gauss(point.y, sigma))
+
+        pts = [pt for pt in self.points if pt not in [self.start_point, self.target_point]]
+        for point in pts:  # excluding start & end
             path.points.append(next_vector(point, self.obstacles, vec))
         path.points.append(self.target_point)
         return path
@@ -77,9 +89,8 @@ def next_vector(point, obstacles, vec_generator):
     vector = vec_generator()
     p1, p2 = point, vector
     in_field = lambda: field.LEFT_WALL < vector.x < field.RIGHT_WALL and field.BOTTOM_WALL < vector.y < field.TOP_WALL
-    while intersect_map(p1, p2, obstacles) or not in_field():
-        vector = vec_generator()
-        p1, p2 = point, vector
+    if intersect_map(p1, p2, obstacles) or not in_field():
+        return next_vector(point, obstacles, vec_generator)
     return vector
 
 
