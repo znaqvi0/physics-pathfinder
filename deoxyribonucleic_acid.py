@@ -126,9 +126,6 @@ def all_families_done(families):
 # for i in range(num_families):
 #     families.append(Family(population//num_families, sigma, sigma_rate).populate(seed=random_path()))
 
-# TODO convert grid to a list of larger rectangles at the start (fewer checks = more optimized)
-# or make the user draw polygons (list of points) instead
-
 draw_course()
 running = False
 t = 0
@@ -154,7 +151,8 @@ while True:
     #     obstacles.remove_obstacle(obst_x, obst_y)
     #     draw_course()
     elif mouse_pressed[2]:
-        obstacles.new_poly()
+        if len(obstacles.polygons[-1]) > 0:
+            obstacles.new_poly()
 
     if running:
         for i in range(1):  # steps multiple times every frame

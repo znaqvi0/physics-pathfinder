@@ -18,12 +18,11 @@ class Path:
         self.done = False
         self.populate()
 
-    def populate(self):
+    def populate(self):  # TODO check the line b/w last waypoint and target point for intersections
         waypoints = [self.start_point]
         vec_generator = lambda: Vec(random.uniform(field.LEFT_WALL, field.RIGHT_WALL), random.uniform(field.BOTTOM_WALL, field.TOP_WALL))
         for i in range(self.num_waypoints):
             waypoints.append(next_vector(waypoints[i], self.obstacles, vec_generator))
-        # waypoints = sorted(waypoints, key=lambda x: mag(x - field.TARGET_POS), reverse=True)
         self.points.extend(waypoints)
         self.points.append(self.target_point)
 
