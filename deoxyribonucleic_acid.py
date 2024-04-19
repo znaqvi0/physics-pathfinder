@@ -108,7 +108,7 @@ initial_population = 1000
 population = 10
 num_families = 1
 
-sigma = 0.5
+sigma = 1
 sigma_rate = 0.95
 
 generation = 1
