@@ -77,6 +77,8 @@ def draw_course():
     draw_rect((0, 200, 50), field.LEFT_WALL, field.TOP_WALL, field.WIDTH, field.HEIGHT)
     screen.blit(field_img, (x0 + field.LEFT_WALL*scale, y0 - field.TOP_WALL*scale))
     draw_obstacles(obstacles)
+    draw_ball(Ball(field.START_POS, Vec(), 0.2, 1, (255, 255, 255)))
+    draw_ball(Ball(field.TARGET_POS, Vec(), 0.2, 1, (255, 255, 255)))
 
 
 def draw_path(path):
@@ -103,11 +105,11 @@ r = 0.021335
 m = 0.045
 
 initial_population = 1000
-population = 100
+population = 10
 num_families = 1
 
-sigma = 10
-sigma_rate = 0.9
+sigma = 0.5
+sigma_rate = 0.95
 
 generation = 1
 

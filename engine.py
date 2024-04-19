@@ -21,9 +21,11 @@ class Path:
     def populate(self):  # TODO check the line b/w last waypoint and target point for intersections
         waypoints = [self.start_point]
         self.points = []
+        i = 0
         vec_generator = lambda: Vec(random.uniform(field.LEFT_WALL, field.RIGHT_WALL), random.uniform(field.BOTTOM_WALL, field.TOP_WALL))
-        for i in range(self.num_waypoints):
+        while i < self.num_waypoints and intersect_map(waypoints[i], self.target_point, self.obstacles):
             waypoints.append(next_vector(waypoints[i], self.obstacles, vec_generator))
+            i += 1
         self.points.extend(waypoints)
         self.points.append(self.target_point)
         if self.intersects_map():
@@ -58,11 +60,20 @@ class Path:
         path = Path(self.start_point, self.target_point, self.num_waypoints, self.obstacles, self.color)
         path.points = [self.start_point]
         vec = lambda: Vec(random.gauss(point.x, sigma), random.gauss(point.y, sigma))
+        keep_chance = 0.95 if sigma > 0.0005 else 1
+        add_chance = (0.05 if sigma > 0.0005 else 0)
+
+        probability = lambda x: random.uniform(0, 1) < x
 
         pts = [pt for pt in self.points if pt not in [self.start_point, self.target_point]]
         for point in pts:  # excluding start & end
-            path.points.append(next_vector(point, self.obstacles, vec))
+            if probability(keep_chance):
+                path.points.append(next_vector(point, self.obstacles, vec))
+            elif probability(add_chance):
+                path.points.append(next_vector(point, self.obstacles, vec))
         path.points.append(self.target_point)
+        if path.intersects_map():
+            path = self.varied_copy(sigma/5)
         return path
 
 
