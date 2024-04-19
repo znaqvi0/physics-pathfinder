@@ -1,3 +1,5 @@
+import random
+
 import field
 from vectors import Vec
 
@@ -36,3 +38,7 @@ def segment_rect_intersect(A, B, rect_top_left: Vec, rect_width, rect_height):  
     bl = tl + Vec(0, -rect_height)
     br = tr + Vec(0, -rect_height)
     return intersect(A, B, tl, tr) or intersect(A, B, tr, bl) or intersect(A, B, bl, br) or intersect(A, B, br, tl)
+
+
+def vec_gaussian_2d(vec, sigma):
+    return Vec(random.gauss(vec.x, sigma), random.gauss(vec.y, sigma), vec.z)

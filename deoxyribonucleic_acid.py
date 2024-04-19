@@ -106,9 +106,9 @@ m = 0.045
 
 initial_population = 1000
 population = 10
-num_families = 1
+num_families = 2
 
-sigma = 1
+sigma = 2
 sigma_rate = 0.95
 
 generation = 1
@@ -125,9 +125,6 @@ def all_families_done(families):
     return True
 
 
-# for i in range(num_families):
-#     families.append(Family(population//num_families, sigma, sigma_rate).populate(seed=random_path()))
-
 draw_course()
 running = False
 t = 0
@@ -139,7 +136,7 @@ while True:
         elif event.type == p.KEYDOWN:
             if event.key == p.K_SPACE:
                 running = not running
-
+                families = []
                 for i in range(num_families):  # populate once all obstacles are drawn
                     families.append(Family(population // num_families, sigma, sigma_rate).populate(seed=random_path()))
 

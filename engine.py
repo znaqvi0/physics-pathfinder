@@ -1,7 +1,7 @@
 import random
 
 import field
-from util import intersect_map, next_vector
+from util import intersect_map, next_vector, vec_gaussian_2d
 from vectors import *
 
 dt = 0.01  # 0.001
@@ -24,7 +24,7 @@ class Path:
         self.points = []
         i = 0
         vec_generator = lambda: Vec(random.uniform(field.LEFT_WALL, field.RIGHT_WALL), random.uniform(field.BOTTOM_WALL, field.TOP_WALL))
-        while i < self.num_waypoints and intersect_map(waypoints[i], self.target_point, self.obstacles):
+        while intersect_map(waypoints[i], self.target_point, self.obstacles):  # and i < self.num_waypoints
             waypoints.append(next_vector(waypoints[i], self.obstacles, vec_generator))
             i += 1
         self.points.extend(waypoints)
@@ -60,9 +60,10 @@ class Path:
         # TODO chance to add/remove a point (change n_waypoints)
         path = Path(self.start_point, self.target_point, self.num_waypoints, self.obstacles, self.color)
         path.points = [self.start_point]
-        vec = lambda: Vec(random.gauss(point.x, sigma), random.gauss(point.y, sigma))
-        keep_chance = 0.95 if sigma > 0.0005 else 1
-        add_chance = (0.05 if sigma > 0.0005 else 0)
+        vec = lambda: vec_gaussian_2d(point, sigma)
+        keep_chance = 0.9  # if sigma > 0.00000005 else 1
+        add_chance = 0.1  # if sigma > 0.00000005 else 0
+        sigma = sigma if sigma > 0.0005 else 0
 
         probability = lambda x: random.uniform(0, 1) < x
 
@@ -74,7 +75,7 @@ class Path:
                     path.points.append(next_vector(point, self.obstacles, vec))
         path.points.append(self.target_point)
         if path.intersects_map():
-            path = self.varied_copy(sigma/5)
+            path = self.varied_copy(sigma/10)
         return path
 
 
