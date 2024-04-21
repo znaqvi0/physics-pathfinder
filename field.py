@@ -4,7 +4,6 @@ import numpy as np
 
 from vectors import *
 
-# TODO obstacle class (similar to moat)
 WIDTH = 16.4846
 HEIGHT = 8.1026
 START_POS = Vec(WIDTH/10, HEIGHT/2)
