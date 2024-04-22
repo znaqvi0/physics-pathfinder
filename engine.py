@@ -49,7 +49,7 @@ class Path:
     def calculate_fitness(self):
         intersects = self.find_intersections()
         intersection_score = 2 if mag(intersects - self.target_point) != 0 else 0
-        length_score = sum([mag(self.points[i] - self.points[i - 1]) for i in range(len(self.points))])
+        length_score = sum([mag(self.points[i] - self.points[i - 1]) for i in range(1, len(self.points))])
         return -length_score - 100*intersection_score
 
     def update(self):
