@@ -61,7 +61,7 @@ class Path:
         path = Path(self.start_point, self.target_point, self.num_waypoints, self.obstacles, self.color)
         path.points = [self.start_point]
         vec = lambda: vec_gaussian_2d(point, sigma)
-        keep_chance = 0.5
+        keep_chance = 0.9
         add_chance = 1 - keep_chance
         sigma = sigma if sigma > 0.0005 else 0
 
