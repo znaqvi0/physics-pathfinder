@@ -17,7 +17,7 @@ def intersect(A, B, C, D):
 def intersect_map(A, B, map: field.ObstacleMap):
     for poly in map.polygons:
         for i in range(len(poly) - 1):
-            C, D = poly[i], poly[i+1]
+            C, D = poly[i], poly[i + 1]
             if intersect(A, B, C, D):
                 return True
     return False
@@ -42,3 +42,7 @@ def segment_rect_intersect(A, B, rect_top_left: Vec, rect_width, rect_height):  
 
 def vec_gaussian_2d(vec, sigma):
     return Vec(random.gauss(vec.x, sigma), random.gauss(vec.y, sigma), vec.z)
+
+
+def probability(x):
+    return random.uniform(0, 1) < x

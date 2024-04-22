@@ -109,7 +109,7 @@ population = 10
 num_families = 2
 
 sigma = 2
-sigma_rate = 0.95
+sigma_rate = 0.98
 
 generation = 1
 

@@ -1,7 +1,7 @@
 import random
 
 import field
-from util import intersect_map, next_vector, vec_gaussian_2d
+from util import intersect_map, next_vector, vec_gaussian_2d, probability
 from vectors import *
 
 dt = 0.01  # 0.001
@@ -61,18 +61,16 @@ class Path:
         path = Path(self.start_point, self.target_point, self.num_waypoints, self.obstacles, self.color)
         path.points = [self.start_point]
         vec = lambda: vec_gaussian_2d(point, sigma)
-        keep_chance = 0.5
+        keep_chance = 0.9
         add_chance = 1 - keep_chance
         sigma = sigma if sigma > 0.0005 else 0
-
-        probability = lambda x: random.uniform(0, 1) < x
 
         pts = [pt for pt in self.points if pt not in [self.start_point, self.target_point]]
         for point in pts:  # excluding start & end
             if probability(keep_chance):
                 path.points.append(next_vector(point, self.obstacles, vec))
-                if probability(add_chance):
-                    path.points.append(next_vector(point, self.obstacles, vec))
+            if probability(add_chance):
+                path.points.append(next_vector(point, self.obstacles, vec))
         path.points.append(self.target_point)
         if path.intersects_map():
             path = self.varied_copy(sigma/10)
