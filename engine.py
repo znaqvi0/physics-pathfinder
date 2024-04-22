@@ -19,7 +19,7 @@ class Path:
         self.done = False
         self.populate()
 
-    def populate(self):  # TODO check the line b/w last waypoint and target point for intersections
+    def populate(self):
         waypoints = [self.start_point]
         self.points = []
         i = 0
@@ -57,7 +57,6 @@ class Path:
         self.done = True
 
     def varied_copy(self, sigma):
-        # TODO chance to add/remove a point (change n_waypoints)
         path = Path(self.start_point, self.target_point, self.num_waypoints, self.obstacles, self.color)
         path.points = [self.start_point]
         vec = lambda: vec_gaussian_2d(point, sigma)
