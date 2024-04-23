@@ -72,7 +72,7 @@ class Path:
                 path.points.append(next_vector(point, self.obstacles, vec))
         path.points.append(self.target_point)
         if path.intersects_map():
-            path = self.varied_copy(sigma/10)
+            path = self.varied_copy(sigma/10, dropout)
         return path
 
 
