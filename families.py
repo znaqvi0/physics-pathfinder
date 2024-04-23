@@ -16,7 +16,7 @@ class Family:
 
     def populate(self, seed):
         for i in range(self.population):
-            self.add(seed.varied_copy(self.sigma))
+            self.add(seed.varied_copy(self.sigma, dropout=False))
         return self
 
     def add(self, path):

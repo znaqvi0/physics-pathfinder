@@ -56,11 +56,11 @@ class Path:
         self.fitness = self.calculate_fitness()
         self.done = True
 
-    def varied_copy(self, sigma):
+    def varied_copy(self, sigma, dropout=True):
         path = Path(self.start_point, self.target_point, self.num_waypoints, self.obstacles, self.color)
         path.points = [self.start_point]
         vec = lambda: vec_gaussian_2d(point, sigma)
-        keep_chance = 0.9
+        keep_chance = 0.8 if dropout else 1
         add_chance = 1 - keep_chance
         sigma = sigma if sigma > 0.0005 else 0
 
