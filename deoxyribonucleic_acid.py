@@ -162,7 +162,7 @@ while True:
         families = sorted(families, key=lambda fam: fam.family_score, reverse=True)
         # print([fam.family_score for fam in families])
 
-        if len(families) > 1 and families[0].sigma < 0.00005:
+        if len(families) > 1 and families[0].sigma < 0.005:
             if generation % 1 == 0:  # kill off a family every _ generations (originally % 5 then 2)
                 families.remove(families[-1])
 
