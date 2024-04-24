@@ -113,8 +113,6 @@ sigma_rate = 0.98
 
 generation = 1
 
-# best_ball = Ball(Vec(), Vec(), 1, 1)
-
 families = []
 
 
@@ -158,12 +156,10 @@ while True:
             for family in families:
                 family.update()
 
-        # if all_families_done(families):
         families = sorted(families, key=lambda fam: fam.family_score, reverse=True)
-        # print([fam.family_score for fam in families])
 
-        if len(families) > 1 and families[0].sigma < 0.005:
-            if generation % 1 == 0:  # kill off a family every _ generations (originally % 5 then 2)
+        if len(families) > 1 and families[0].sigma < 0.0005:
+            if generation % 1 == 0:  # kill off a family every _ generations
                 families.remove(families[-1])
 
                 for family in families:
