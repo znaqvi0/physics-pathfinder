@@ -105,8 +105,8 @@ r = 0.021335
 m = 0.045
 
 initial_population = 1000
-population = 10
-num_families = 2
+population = 20
+num_families = 3
 
 sigma = 2
 sigma_rate = 0.98
@@ -158,7 +158,7 @@ while True:
 
         families = sorted(families, key=lambda fam: fam.family_score, reverse=True)
 
-        if len(families) > 1 and families[0].sigma < 0.0005:
+        if len(families) > 1 and families[0].sigma < 0.005:
             if generation % 1 == 0:  # kill off a family every _ generations
                 families.remove(families[-1])
 

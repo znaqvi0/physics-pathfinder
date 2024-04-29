@@ -23,12 +23,14 @@ def intersect_map(A, B, map: field.ObstacleMap):
     return False
 
 
-def next_vector(point, obstacles, vec_generator):
+def next_vector(point, obstacles, vec_generator, recur):
+    if recur <= 0:
+        return point
     vector = vec_generator()
     p1, p2 = point, vector
     in_field = lambda: field.LEFT_WALL < vector.x < field.RIGHT_WALL and field.BOTTOM_WALL < vector.y < field.TOP_WALL
     if intersect_map(p1, p2, obstacles) or not in_field():
-        return next_vector(point, obstacles, vec_generator)
+        return next_vector(point, obstacles, vec_generator, recur-1)
     return vector
 
 

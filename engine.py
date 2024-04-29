@@ -25,12 +25,10 @@ class Path:
         i = 0
         vec_generator = lambda: Vec(random.uniform(field.LEFT_WALL, field.RIGHT_WALL), random.uniform(field.BOTTOM_WALL, field.TOP_WALL))
         while intersect_map(waypoints[i], self.target_point, self.obstacles):  # and i < self.num_waypoints
-            waypoints.append(next_vector(waypoints[i], self.obstacles, vec_generator))
+            waypoints.append(next_vector(waypoints[i], self.obstacles, vec_generator, 900))
             i += 1
         self.points.extend(waypoints)
         self.points.append(self.target_point)
-        # if self.intersects_map():
-        #     self.populate()
 
     def intersects_map(self):
         for i in range(len(self.points) - 1):
@@ -47,10 +45,10 @@ class Path:
         return self.points[-1]
 
     def calculate_fitness(self):
-        intersects = self.find_intersections()
-        intersection_score = 2 if mag(intersects - self.target_point) != 0 else 0
+        # intersects = self.find_intersections()
+        # intersection_score = 2 if mag(intersects - self.target_point) != 0 else 0
         length_score = sum([mag(self.points[i] - self.points[i - 1]) for i in range(1, len(self.points))])
-        return -length_score - 100*intersection_score
+        return -length_score  # - 100*intersection_score
 
     def update(self):
         self.fitness = self.calculate_fitness()
@@ -60,16 +58,19 @@ class Path:
         path = Path(self.start_point, self.target_point, self.num_waypoints, self.obstacles, self.color)
         path.points = [self.start_point]
         vec = lambda: vec_gaussian_2d(point, sigma)
-        keep_chance = 0.8 if dropout else 1
+
+        keep_chance = 0.8 if dropout and sigma > 0.0005 else 1
         add_chance = 1 - keep_chance
         sigma = sigma if sigma > 0.0005 else 0
 
         pts = [pt for pt in self.points if pt not in [self.start_point, self.target_point]]
         for point in pts:  # excluding start & end
             if probability(keep_chance):
-                path.points.append(next_vector(point, self.obstacles, vec))
+                path.points.append(next_vector(point, self.obstacles, vec, 15))
             if probability(add_chance):
-                path.points.append(next_vector(point, self.obstacles, vec))
+                vector = next_vector(point, self.obstacles, vec, 15)
+                if mag(point - vector) > 0.005:
+                    path.points.append(vector)
         path.points.append(self.target_point)
         if path.intersects_map():
             path = self.varied_copy(sigma/10, dropout)
