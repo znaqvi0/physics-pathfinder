@@ -12,7 +12,7 @@ class Path:
         self.start_point = start
         self.target_point = target
         self.num_waypoints = n_waypoints
-        self.points = []  # [start]
+        self.points = []
         self.obstacles = obstacles
         self.color = color
         self.fitness = -999999
@@ -45,10 +45,8 @@ class Path:
         return self.points[-1]
 
     def calculate_fitness(self):
-        # intersects = self.find_intersections()
-        # intersection_score = 2 if mag(intersects - self.target_point) != 0 else 0
         length_score = sum([mag(self.points[i] - self.points[i - 1]) for i in range(1, len(self.points))])
-        return -length_score  # - 100*intersection_score
+        return -length_score
 
     def update(self):
         self.fitness = self.calculate_fitness()
@@ -61,19 +59,18 @@ class Path:
 
         keep_chance = 0.8 if dropout and sigma > 0.0005 else 1
         add_chance = 1 - keep_chance
-        sigma = sigma if sigma > 0.0005 else 0
 
-        pts = [pt for pt in self.points if pt not in [self.start_point, self.target_point]]
-        for point in pts:  # excluding start & end
+        pts = [pt for pt in self.points if pt not in [self.start_point, self.target_point]]  # excluding start & end
+        for point in pts:
             if probability(keep_chance):
                 path.points.append(next_vector(point, self.obstacles, vec, 5))
             if probability(add_chance):
                 vector = next_vector(point, self.obstacles, vec, 5)
-                if mag(point - vector) > 0.005:
+                if mag(point - vector) > 0.005:  # prevent placing points nearly on top of each other
                     path.points.append(vector)
         path.points.append(self.target_point)
         if path.intersects_map():
-            path = self.varied_copy(sigma/10, dropout)
+            path = self.varied_copy(sigma/10, dropout)  # try again on failure
         return path
 
 

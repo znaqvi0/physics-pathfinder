@@ -66,6 +66,13 @@ class ObstacleMap:
     def new_poly(self):
         self.polygons.append([])
 
+    def undo(self):
+        if len(self.polygons[-1]) > 0:
+            self.polygons[-1].remove(self.polygons[-1][-1])
+
+    def reset(self):
+        self.__init__()
+
 
 if __name__ == "__main__":
     grid = ObstacleGrid(GRID_DIMENSION)

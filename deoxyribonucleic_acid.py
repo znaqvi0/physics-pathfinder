@@ -137,16 +137,18 @@ while True:
                 families = []
                 for i in range(num_families):  # populate once all obstacles are drawn
                     families.append(Family(population // num_families, sigma, sigma_rate).populate(seed=random_path()))
+            if event.key == p.K_z:
+                obstacles.undo()
+                draw_course()
+            if event.key == p.K_r:
+                obstacles.reset()
+                draw_course()
 
     mouse_pressed = p.mouse.get_pressed(num_buttons=3)
     if mouse_pressed[0]:
         obst_x, obst_y = get_mouse_xy_meters()
         obstacles.add_point(obst_x, obst_y)
         draw_course()
-    # elif mouse_pressed[2]:  # TODO remove closest point to cursor
-    #     obst_x, obst_y = get_mouse_xy_meters()
-    #     obstacles.remove_obstacle(obst_x, obst_y)
-    #     draw_course()
     elif mouse_pressed[2]:
         if len(obstacles.polygons[-1]) > 0:
             obstacles.new_poly()
