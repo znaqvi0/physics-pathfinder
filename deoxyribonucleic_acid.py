@@ -105,10 +105,10 @@ r = 0.021335
 m = 0.045
 
 initial_population = 1000
-population = 20
-num_families = 3
+population = 10
+num_families = 1
 
-sigma = 2
+sigma = 20
 sigma_rate = 0.98
 
 generation = 1

@@ -66,9 +66,9 @@ class Path:
         pts = [pt for pt in self.points if pt not in [self.start_point, self.target_point]]
         for point in pts:  # excluding start & end
             if probability(keep_chance):
-                path.points.append(next_vector(point, self.obstacles, vec, 15))
+                path.points.append(next_vector(point, self.obstacles, vec, 5))
             if probability(add_chance):
-                vector = next_vector(point, self.obstacles, vec, 15)
+                vector = next_vector(point, self.obstacles, vec, 5)
                 if mag(point - vector) > 0.005:
                     path.points.append(vector)
         path.points.append(self.target_point)
