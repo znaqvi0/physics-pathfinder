@@ -87,7 +87,7 @@ def draw_path(path):
 
 
 def random_path():
-    return Path(field.START_POS, field.TARGET_POS, 10, obstacles,
+    return Path(field.START_POS, field.TARGET_POS, obstacles,
                 color=(random.uniform(0, 255), random.uniform(0, 255), random.uniform(0, 255)))
 
 

@@ -8,10 +8,9 @@ dt = 0.01  # 0.001
 
 
 class Path:
-    def __init__(self, start, target, n_waypoints, obstacles, color):
+    def __init__(self, start, target, obstacles, color):
         self.start_point = start
         self.target_point = target
-        self.num_waypoints = n_waypoints
         self.points = []
         self.obstacles = obstacles
         self.color = color
@@ -53,7 +52,7 @@ class Path:
         self.done = True
 
     def varied_copy(self, sigma, dropout=True):
-        path = Path(self.start_point, self.target_point, self.num_waypoints, self.obstacles, self.color)
+        path = Path(self.start_point, self.target_point, self.obstacles, self.color)
         path.points = [self.start_point]
         vec = lambda: vec_gaussian_2d(point, sigma)
 
