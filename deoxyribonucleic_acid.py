@@ -143,6 +143,8 @@ while True:
             if event.key == p.K_r:
                 obstacles.reset()
                 draw_course()
+            if event.key == p.K_n:
+                obstacles.new_poly()
 
     mouse_pressed = p.mouse.get_pressed(num_buttons=3)
     if mouse_pressed[0]:
@@ -154,10 +156,6 @@ while True:
             obstacles.new_poly()
 
     if running:
-        for i in range(1):  # steps multiple times every frame
-            for family in families:
-                family.update()
-
         families = sorted(families, key=lambda fam: fam.family_score, reverse=True)
 
         if len(families) > 1 and families[0].sigma < 0.005:
@@ -172,6 +170,7 @@ while True:
         draw_course()
         for family in families:
             family.paths = family.next_gen()
+            family.update()
 
             for path in family.paths:
                 draw_path(path)
