@@ -8,7 +8,7 @@ dt = 0.01  # 0.001
 
 
 class Path:
-    def __init__(self, start, target, obstacles, color):
+    def __init__(self, start, target, obstacles, color, populate=False):
         self.start_point = start
         self.target_point = target
         self.points = []
@@ -16,33 +16,45 @@ class Path:
         self.color = color
         self.fitness = -999999
         self.done = False
-        self.populate()
+        if populate:
+            self.populate()
 
     def populate(self):
         waypoints = [self.start_point]
         self.points = []
         i = 0
         vec_generator = lambda: vec_gaussian_2d(waypoints[i], sigma=10)
-        while intersect_map(waypoints[i], self.target_point, self.obstacles):  # and i < self.num_waypoints
+        while intersect_map(waypoints[i], self.target_point, self.obstacles):
             vector = next_vector(waypoints[i], self.obstacles, vec_generator, 900)
             if mag(waypoints[i] - vector) > 0.1:
                 waypoints.append(vector)
                 i += 1
-        self.points.extend(waypoints)
+
+        j = 0
+        new_waypoints = [self.start_point]
+        sort_waypoints = sorted(waypoints, key=lambda pt: mag(pt - waypoints[j]), reverse=True)
+        while intersect_map(new_waypoints[j], self.target_point, self.obstacles):
+            for k in reversed(range(len(sort_waypoints))):
+                if not intersect_map(new_waypoints[j], waypoints[k], self.obstacles):
+                    new_waypoints.append(waypoints[k])
+                    j += 1
+                    break
+
+        self.points.extend(new_waypoints)
         self.points.append(self.target_point)
 
     def intersects_map(self):
         for i in range(len(self.points) - 1):
-            p1, p2 = self.points[i], self.points[i+1]
+            p1, p2 = self.points[i], self.points[i + 1]
             if intersect_map(p1, p2, self.obstacles):
                 return True
         return False
 
     def find_intersections(self):
         for i in range(1, len(self.points)):
-            p1, p2 = self.points[i-1], self.points[i]
+            p1, p2 = self.points[i - 1], self.points[i]
             if intersect_map(p1, p2, self.obstacles):
-                return (p1+p2)/2  # intersection is somewhat close to this
+                return (p1 + p2) / 2  # intersection is somewhat close to this
         return self.points[-1]
 
     def calculate_fitness(self):
@@ -71,7 +83,7 @@ class Path:
                     path.points.append(vector)
         path.points.append(self.target_point)
         if path.intersects_map():
-            path = self.varied_copy(sigma/10, dropout, 1-(1-dropout_val)*0.5)  # try again on failure
+            path = self.varied_copy(sigma / 10, dropout, 1 - (1 - dropout_val) * 0.5)  # try again on failure
         return path
 
 

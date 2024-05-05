@@ -88,7 +88,7 @@ def draw_path(path):
 
 def random_path():
     return Path(field.START_POS, field.TARGET_POS, obstacles,
-                color=(random.uniform(100, 255), random.uniform(100, 255), random.uniform(100, 255)))
+                color=(random.uniform(100, 255), random.uniform(100, 255), random.uniform(100, 255)), populate=True)
 
 
 def get_mouse_xy_meters():
@@ -109,7 +109,7 @@ population = 10
 num_families = 1
 
 sigma = 20
-sigma_rate = 0.98
+sigma_rate = 0.99
 
 generation = 1
 
