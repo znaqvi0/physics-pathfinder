@@ -59,7 +59,7 @@ class Path:
         keep_chance = 0.8 if dropout and sigma > 0.0005 else 1
         add_chance = 1 - keep_chance
 
-        pts = [pt for pt in self.points if pt not in [self.start_point, self.target_point]]  # excluding start & end
+        pts = self.points[1:-1]  # excluding start & end
         for point in pts:
             if probability(keep_chance):
                 path.points.append(next_vector(point, self.obstacles, vec, 5))

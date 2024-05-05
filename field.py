@@ -24,7 +24,6 @@ WALL_RANDOMNESS = lambda: random.gauss(0, 0.1)
 GRID_DIMENSION = 1  # HEIGHT // 8
 
 
-# TODO improve how x, y translates to an obstacle
 class ObstacleGrid:
     def __init__(self, square_dimension):
         self.square_dimension = square_dimension
