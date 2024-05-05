@@ -22,10 +22,12 @@ class Path:
         waypoints = [self.start_point]
         self.points = []
         i = 0
-        vec_generator = lambda: Vec(random.uniform(field.LEFT_WALL, field.RIGHT_WALL), random.uniform(field.BOTTOM_WALL, field.TOP_WALL))
+        vec_generator = lambda: vec_gaussian_2d(waypoints[i], sigma=10)
         while intersect_map(waypoints[i], self.target_point, self.obstacles):  # and i < self.num_waypoints
-            waypoints.append(next_vector(waypoints[i], self.obstacles, vec_generator, 900))
-            i += 1
+            vector = next_vector(waypoints[i], self.obstacles, vec_generator, 900)
+            if mag(waypoints[i] - vector) > 0.1:
+                waypoints.append(vector)
+                i += 1
         self.points.extend(waypoints)
         self.points.append(self.target_point)
 
@@ -51,12 +53,12 @@ class Path:
         self.fitness = self.calculate_fitness()
         self.done = True
 
-    def varied_copy(self, sigma, dropout=True):
+    def varied_copy(self, sigma, dropout=True, dropout_val=0.8):
         path = Path(self.start_point, self.target_point, self.obstacles, self.color)
         path.points = [self.start_point]
         vec = lambda: vec_gaussian_2d(point, sigma)
 
-        keep_chance = 0.8 if dropout and sigma > 0.0005 else 1
+        keep_chance = dropout_val if dropout and sigma > 0.0005 else 1
         add_chance = 1 - keep_chance
 
         pts = self.points[1:-1]  # excluding start & end
@@ -65,11 +67,11 @@ class Path:
                 path.points.append(next_vector(point, self.obstacles, vec, 5))
             if probability(add_chance):
                 vector = next_vector(point, self.obstacles, vec, 5)
-                if mag(point - vector) > 0.005:  # prevent placing points nearly on top of each other
+                if mag(point - vector) > 0.01:  # prevent placing points nearly on top of each other
                     path.points.append(vector)
         path.points.append(self.target_point)
         if path.intersects_map():
-            path = self.varied_copy(sigma/10, dropout)  # try again on failure
+            path = self.varied_copy(sigma/10, dropout, 1-(1-dropout_val)*0.5)  # try again on failure
         return path
 
 
