@@ -65,7 +65,7 @@ class Path:
         self.fitness = self.calculate_fitness()
         self.done = True
 
-    def varied_copy(self, sigma, dropout=True, dropout_val=0.8):
+    def varied_copy(self, sigma, dropout=True, dropout_val=0.5):
         path = Path(self.start_point, self.target_point, self.obstacles, self.color)
         path.points = [self.start_point]
         vec = lambda: vec_gaussian_2d(point, sigma)
@@ -76,14 +76,14 @@ class Path:
         pts = self.points[1:-1]  # excluding start & end
         for point in pts:
             if probability(keep_chance):
-                path.points.append(next_vector(point, self.obstacles, vec, 5))
+                path.points.append(next_vector(point, self.obstacles, vec, 50))
             if probability(add_chance):
-                vector = next_vector(point, self.obstacles, vec, 5)
-                if mag(point - vector) > 0.01:  # prevent placing points nearly on top of each other
+                vector = next_vector(point, self.obstacles, vec, 50)
+                if mag(point - vector) > 0.001:  # prevent placing points nearly on top of each other
                     path.points.append(vector)
         path.points.append(self.target_point)
         if path.intersects_map():
-            path = self.varied_copy(sigma / 10, dropout, 1 - (1 - dropout_val) * 0.5)  # try again on failure
+            path = self.varied_copy(sigma / 2, dropout, 1 - (1 - dropout_val) * 0.5)  # try again on failure
         return path
 
 
