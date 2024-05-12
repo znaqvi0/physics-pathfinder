@@ -39,16 +39,6 @@ class Family:
                 return False
         return True
 
-    def tribalism(self, num_families, new_sigma):
-        new_families = []
-        lst = sorted(self.paths, key=lambda x: x.personality())
-        sections = np.array_split(lst, num_families)
-        for i in range(len(sections)):  # for every section
-            new_families.append(Family(self.population // num_families, new_sigma, self.sigma_rate))
-            for ball in sections[i]:  # add every ball in the section to the corresponding family
-                new_families[i].add(ball)
-        return new_families
-
     def next_gen(self):
         self.paths = sorted(self.paths, key=lambda x: x.fitness, reverse=True)
         self.generations_passed += 1

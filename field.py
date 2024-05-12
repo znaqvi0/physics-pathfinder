@@ -4,8 +4,8 @@ import numpy as np
 
 from vectors import *
 
-WIDTH = 16.4846
-HEIGHT = 8.1026
+WIDTH = 25  # 16.4846
+HEIGHT = 14  # 8.1026
 START_POS = Vec(WIDTH * 0.08, HEIGHT * 0.675)
 TARGET_POS = Vec(WIDTH * 0.95, HEIGHT * 0.1)
 

@@ -8,7 +8,7 @@ from families import Family
 
 p.init()
 
-WIDTH = 800
+WIDTH = 1200
 HEIGHT = 800
 font = p.font.SysFont('Monocraft', 20)
 
@@ -74,8 +74,8 @@ def draw_obstacles(_obstacles: field.ObstacleMap):
 
 def draw_course():
     screen.fill(screen_color)
-    draw_rect((0, 200, 50), field.LEFT_WALL, field.TOP_WALL, field.WIDTH, field.HEIGHT)
-    screen.blit(field_img, (x0 + field.LEFT_WALL*scale, y0 - field.TOP_WALL*scale))
+    draw_rect((50, 50, 50), field.LEFT_WALL, field.TOP_WALL, field.WIDTH, field.HEIGHT)
+    # screen.blit(field_img, (x0 + field.LEFT_WALL*scale, y0 - field.TOP_WALL*scale))
     draw_obstacles(obstacles)
     draw_ball(Ball(field.START_POS, Vec(), 0.2, 1, (255, 255, 255)))
     draw_ball(Ball(field.TARGET_POS, Vec(), 0.2, 1, (255, 255, 255)))
@@ -105,11 +105,11 @@ r = 0.021335
 m = 0.045
 
 initial_population = 1000
-population = 10
-num_families = 1
+population = 50
+num_families = 5
 
-sigma = 20
-sigma_rate = 0.995
+sigma = 5
+sigma_rate = 0.98
 
 generation = 1
 
@@ -125,6 +125,7 @@ def all_families_done(families):
 
 draw_course()
 running = False
+populate = True
 t = 0
 while True:
     for event in p.event.get():
@@ -134,9 +135,11 @@ while True:
         elif event.type == p.KEYDOWN:
             if event.key == p.K_SPACE:
                 running = not running
-                families = []
-                for i in range(num_families):  # populate once all obstacles are drawn
-                    families.append(Family(population // num_families, sigma, sigma_rate).populate(seed=random_path()))
+                if populate:
+                    families = []
+                    for i in range(num_families):  # populate once all obstacles are drawn
+                        families.append(Family(population // num_families, sigma, sigma_rate).populate(seed=random_path()))
+                    populate = False
             if event.key == p.K_z:
                 obstacles.undo()
                 draw_course()
@@ -158,7 +161,7 @@ while True:
     if running:
         families = sorted(families, key=lambda fam: fam.family_score, reverse=True)
 
-        if len(families) > 1 and families[0].sigma < 0.005:
+        if len(families) > 1 and families[0].sigma < 0.1:
             if generation % 1 == 0:  # kill off a family every _ generations
                 families.remove(families[-1])
 
