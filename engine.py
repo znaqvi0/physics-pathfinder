@@ -1,7 +1,7 @@
 import random
 
 import field
-from util import intersect_map, next_vector, vec_gaussian_2d, probability
+from util import intersect_map, next_vector, vec_gauss_2d, probability, gauss_point_between
 from vectors import *
 
 dt = 0.01  # 0.001
@@ -23,7 +23,7 @@ class Path:
         waypoints = [self.start_point]
         self.points = []
         i = 0
-        vec_generator = lambda: vec_gaussian_2d(waypoints[i], sigma=10)
+        vec_generator = lambda: vec_gauss_2d(waypoints[i], sigma=10)
         while intersect_map(waypoints[i], self.target_point, self.obstacles):
             vector = next_vector(waypoints[i], self.obstacles, vec_generator, 900)
             if mag(waypoints[i] - vector) > 0.1:
@@ -50,16 +50,10 @@ class Path:
                 return True
         return False
 
-    def find_intersections(self):
-        for i in range(1, len(self.points)):
-            p1, p2 = self.points[i - 1], self.points[i]
-            if intersect_map(p1, p2, self.obstacles):
-                return (p1 + p2) / 2  # intersection is somewhat close to this
-        return self.points[-1]
-
     def calculate_fitness(self):
         length_score = sum([mag(self.points[i] - self.points[i - 1]) for i in range(1, len(self.points))])
-        return -length_score
+        num_points_score = len(self.points) * 0.02
+        return -length_score - num_points_score
 
     def update(self):
         self.fitness = self.calculate_fitness()
@@ -68,19 +62,24 @@ class Path:
     def varied_copy(self, sigma, dropout=True, dropout_val=0.5):
         path = Path(self.start_point, self.target_point, self.obstacles, self.color)
         path.points = [self.start_point]
-        vec = lambda: vec_gaussian_2d(point, sigma)
 
-        keep_chance = dropout_val if dropout and sigma > 0.0005 else 1
+        keep_chance = dropout_val if dropout else 1
         add_chance = 1 - keep_chance
 
-        pts = self.points[1:-1]  # excluding start & end
-        for point in pts:
+        pts = self.points[:]
+        for i in range(len(pts)-1):  # exclude target point
+            point = pts[i]
+
             if probability(keep_chance):
-                path.points.append(next_vector(point, self.obstacles, vec, 50))
+                if point != self.start_point:  # exclude start point
+                    path.points.append(next_vector(point, self.obstacles, lambda: vec_gauss_2d(point, sigma), 50))
+
             if probability(add_chance):
-                vector = next_vector(point, self.obstacles, vec, 50)
-                if mag(point - vector) > 0.001:  # prevent placing points nearly on top of each other
+                vector = next_vector(point, self.obstacles,
+                                     lambda: gauss_point_between(point, pts[i + 1], sigma), 50)
+                if mag(point - vector) > 0.01:
                     path.points.append(vector)
+
         path.points.append(self.target_point)
         if path.intersects_map():
             path = self.varied_copy(sigma / 2, dropout, 1 - (1 - dropout_val) * 0.5)  # try again on failure
@@ -102,13 +101,6 @@ class Ball:
 
     def __repr__(self):
         return f"v0={self.v0}"
-
-    def varied_copy_gaussian(self, sigma):
-        ball = Ball(self.pos0,
-                    Vec(random.gauss(self.v0.x, sigma), random.gauss(self.v0.y, sigma)),
-                    self.r, self.m, self.color)
-        ball.v0 = ball.v.copy()
-        return ball
 
     def move(self):
         self.pos += self.v * dt

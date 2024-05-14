@@ -99,28 +99,18 @@ def get_mouse_xy_meters():
     return newx, newy
 
 
-# constants (change to robot dimensions/mass)
+# constants
 pos0 = field.START_POS
-r = 0.021335
-m = 0.045
 
-initial_population = 1000
-population = 50
-num_families = 5
+population = 30
+num_families = 3
 
 sigma = 5
-sigma_rate = 0.98
+sigma_rate = 0.9
 
 generation = 1
 
 families = []
-
-
-def all_families_done(families):
-    for family in families:
-        if not family.all_done():
-            return False
-    return True
 
 
 draw_course()

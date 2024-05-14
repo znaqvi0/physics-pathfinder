@@ -1,7 +1,7 @@
 import random
 
 import field
-from vectors import Vec
+from vectors import Vec, norm, mag
 
 
 def ccw(A, B, C):  # works for Vec because Vec has x and y attributes
@@ -34,16 +34,13 @@ def next_vector(point, obstacles, vec_generator, recur):
     return vector
 
 
-def segment_rect_intersect(A, B, rect_top_left: Vec, rect_width, rect_height):  # A, B: line segment points
-    tl = rect_top_left
-    tr = rect_top_left + Vec(rect_width, 0)
-    bl = tl + Vec(0, -rect_height)
-    br = tr + Vec(0, -rect_height)
-    return intersect(A, B, tl, tr) or intersect(A, B, tr, bl) or intersect(A, B, bl, br) or intersect(A, B, br, tl)
-
-
-def vec_gaussian_2d(vec, sigma):
+def vec_gauss_2d(vec, sigma):
     return Vec(random.gauss(vec.x, sigma), random.gauss(vec.y, sigma), vec.z)
+
+
+def gauss_point_between(p1, p2, sigma):
+    displacement = p2 - p1
+    return vec_gauss_2d(p1 + norm(displacement) * random.uniform(0, mag(displacement)), sigma)
 
 
 def probability(x):
