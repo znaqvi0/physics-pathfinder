@@ -46,7 +46,7 @@ class Family:
         avg_score = sum(path.fitness for path in self.paths) / len(self.paths)
         self.family_score = avg_score  # careful with sign
 
-        num_children = self.population // 3
+        num_children = self.population // 2
 
         self.paths = self.paths[0:max(num_children, 1)]
         self.best_path = self.paths[0]

@@ -5,6 +5,7 @@ import pygame as p
 import field
 from engine import *
 from families import Family
+import matplotlib.pyplot as plt
 
 p.init()
 
@@ -50,9 +51,9 @@ def draw_text(text, top_left, text_color=(255, 255, 255)):
     screen.blit(display, display_rect)
 
 
-def draw_line(p1, p2, color=(0, 0, 0)):
+def draw_line(p1, p2, color=(0, 0, 0), width=1):
     p.draw.line(screen, color, (x0 + p1.x * scale, y0 - p1.y * scale),
-                (x0 + p2.x * scale, y0 - p2.y * scale))
+                (x0 + p2.x * scale, y0 - p2.y * scale), width=width)
 
 
 def draw_rect(color, left_x, top_y, width, height):
@@ -83,7 +84,7 @@ def draw_course():
 
 def draw_path(path):
     for i in range(1, len(path.points)):
-        draw_line(path.points[i-1], path.points[i], path.color)
+        draw_line(path.points[i-1], path.points[i], path.color, width=3)
 
 
 def random_path():
@@ -106,11 +107,14 @@ population = 30
 num_families = 3
 
 sigma = 5
-sigma_rate = 0.9
+sigma_rate = 0.8
 
 generation = 1
 
 families = []
+
+score_data = []
+plot_scores = False
 
 
 draw_course()
@@ -151,7 +155,7 @@ while True:
     if running:
         families = sorted(families, key=lambda fam: fam.family_score, reverse=True)
 
-        if len(families) > 1 and families[0].sigma < 0.1:
+        if len(families) > 1 and families[0].sigma < 0.01:
             if generation % 1 == 0:  # kill off a family every _ generations
                 families.remove(families[-1])
 
@@ -168,6 +172,12 @@ while True:
             for path in family.paths:
                 draw_path(path)
 
+        if plot_scores:
+            if families[0].generations_passed % 5 == 0:
+                score_data.append([families[0].generations_passed, families[0].family_score])
+            if families[0].generations_passed == 100:
+                break
+
         draw_text("sigma: %.10f" % families[0].sigma, (20, 20))
         draw_text("best family score: %.5f" % families[0].family_score, (20, 40))
         draw_text("number of families: %.0i" % len(families), (20, 60))
@@ -175,3 +185,18 @@ while True:
 
     p.display.flip()
     p.time.Clock().tick()  # caps frame rate at 100
+
+if plot_scores:
+    labels = []
+    scores = []
+    for gen, score in score_data:
+        labels.append(gen)
+        scores.append(score)
+
+    fig1, ax1 = plt.subplots()
+    ax1.plot(labels, scores)
+
+    plt.xlabel("generation")
+    plt.ylabel("score")
+
+    plt.show()

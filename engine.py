@@ -82,7 +82,7 @@ class Path:
 
         path.points.append(self.target_point)
         if path.intersects_map():
-            path = self.varied_copy(sigma / 2, dropout, 1 - (1 - dropout_val) * 0.5)  # try again on failure
+            path = self.varied_copy(sigma / 2, dropout, 1 - (1 - dropout_val) * 0.6)  # try again on failure
         return path
 
 
