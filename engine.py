@@ -55,7 +55,7 @@ class Path:
 
     def calculate_fitness(self):
         length_score = self.length()
-        num_points_score = len(self.points) * 0.015
+        num_points_score = len(self.points) * 0.02
         return -length_score - num_points_score
 
     def update(self):

@@ -3,6 +3,7 @@ import sys  # most commonly used to turn the interpreter off (shut down your gam
 import pygame as p
 
 import field
+import obstacle_presets
 from engine import *
 from families import Family
 import matplotlib.pyplot as plt
@@ -23,10 +24,10 @@ p.display.set_caption('window')
 scale = 40  # 200
 origin = x0, y0 = WIDTH / 2 - field.WIDTH/2*scale, HEIGHT / 2 + field.HEIGHT/2*scale  # This is the new origin
 
-field_img = p.image.load("frc2024.png").convert_alpha()  # https://www.chiefdelphi.com/t/2024-crescendo-top-down-field-renders/447764
+# frc field: https://www.chiefdelphi.com/t/2024-crescendo-top-down-field-renders/447764
+field_img = p.image.load("maze.png").convert_alpha()
 field_img = p.transform.scale(field_img, (field.WIDTH * scale, field.HEIGHT * scale))
 
-# obstacles = field.ObstacleGrid(0.75)  # this is passed in as a reference; changing this changes all paths that use it
 obstacles = field.ObstacleMap()
 
 
@@ -73,13 +74,13 @@ def draw_obstacles(_obstacles: field.ObstacleMap):
             draw_line(poly[i-1], poly[i], (255, 0, 0))
 
 
-def draw_course():
+def draw_course(start, target):
     screen.fill(screen_color)
     draw_rect((50, 50, 50), field.LEFT_WALL, field.TOP_WALL, field.WIDTH, field.HEIGHT)
     # screen.blit(field_img, (x0 + field.LEFT_WALL*scale, y0 - field.TOP_WALL*scale))
     draw_obstacles(obstacles)
-    draw_ball(Ball(field.START_POS, Vec(), 0.2, 1, (255, 255, 255)))
-    draw_ball(Ball(field.TARGET_POS, Vec(), 0.2, 1, (255, 255, 255)))
+    draw_ball(Ball(start, Vec(), 0.2, 1, (255, 255, 255)))
+    draw_ball(Ball(target, Vec(), 0.2, 1, (255, 255, 255)))
 
 
 def draw_path(path):
@@ -87,8 +88,8 @@ def draw_path(path):
         draw_line(path.points[i-1], path.points[i], path.color, width=3)
 
 
-def random_path():
-    return Path(field.START_POS, field.TARGET_POS, obstacles,
+def random_path(start, target):
+    return Path(start, target, obstacles,
                 color=(random.uniform(100, 255), random.uniform(100, 255), random.uniform(100, 255)), populate=True)
 
 
@@ -117,13 +118,18 @@ def graph_scores(data):
 
 
 # constants
-pos0 = field.START_POS
-population = 100
+preset = obstacle_presets.maze
+
+pos0 = preset.start
+target_pos = preset.target
+
+obstacles.polygons = preset.polygons
+
+population = 50
 num_families = population//10
 
 sigma = 5
 sigma_rate = 0.8
-
 generation = 1
 
 families = []
@@ -132,7 +138,7 @@ score_data = []
 plot_scores = True
 
 
-draw_course()
+draw_course(pos0, target_pos)
 running = False
 populate = True
 while True:
@@ -146,14 +152,14 @@ while True:
                 if populate:
                     families = []
                     for i in range(num_families):  # populate once all obstacles are drawn
-                        families.append(Family(population // num_families, sigma, sigma_rate).populate(seed=random_path()))
+                        families.append(Family(population // num_families, sigma, sigma_rate).populate(seed=random_path(pos0, target_pos)))
                     populate = False
             if event.key == p.K_z:
                 obstacles.undo()
-                draw_course()
+                draw_course(pos0, target_pos)
             if event.key == p.K_r:
                 obstacles.reset()
-                draw_course()
+                draw_course(pos0, target_pos)
             if event.key == p.K_n:
                 obstacles.new_poly()
 
@@ -161,7 +167,7 @@ while True:
     if mouse_pressed[0]:
         obst_x, obst_y = get_mouse_xy_meters()
         obstacles.add_point(obst_x, obst_y)
-        draw_course()
+        draw_course(pos0, target_pos)
     elif mouse_pressed[2]:
         if len(obstacles.polygons[-1]) > 0:
             obstacles.new_poly()
@@ -174,11 +180,11 @@ while True:
                 families.remove(families[-1])
 
                 for family in families:
-                    family.population = population // len(families)
+                    family.population = min(30, population // len(families))
 
         # best_path = sorted(families, key=lambda fam: fam.best_path.fitness, reverse=True)[0].best_path
         screen.fill(screen_color)
-        draw_course()
+        draw_course(pos0, target_pos)
         for family in families:
             family.paths = family.next_gen()
             family.update()
@@ -198,5 +204,6 @@ while True:
     p.display.flip()
     p.time.Clock().tick()  # caps frame rate at 100
 
+print(obstacles.polygons)
 if plot_scores:
     graph_scores(score_data)
