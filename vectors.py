@@ -45,7 +45,7 @@ class Vec:
         raise TypeError(f"cannot divide vector and {type(scalar)}")
 
     def __repr__(self):
-        return f"<{self.x} {self.y} {self.z}>"
+        return f"Vec({self.x}, {self.y}, {self.z})"
 
     def dot(self, other):
         if isinstance(other, Vec):

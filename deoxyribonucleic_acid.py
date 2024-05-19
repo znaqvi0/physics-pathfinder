@@ -100,11 +100,26 @@ def get_mouse_xy_meters():
     return newx, newy
 
 
+def graph_scores(data):
+    labels = []
+    scores = []
+    for gen, score in data:
+        labels.append(gen)
+        scores.append(score)
+
+    fig1, ax1 = plt.subplots()
+    ax1.plot(labels, scores)
+
+    plt.xlabel("generation")
+    plt.ylabel("score")
+
+    plt.show()
+
+
 # constants
 pos0 = field.START_POS
-
-population = 30
-num_families = 3
+population = 100
+num_families = population//10
 
 sigma = 5
 sigma_rate = 0.8
@@ -114,13 +129,12 @@ generation = 1
 families = []
 
 score_data = []
-plot_scores = False
+plot_scores = True
 
 
 draw_course()
 running = False
 populate = True
-t = 0
 while True:
     for event in p.event.get():
         if event.type == p.QUIT:  # this refers to clicking on the "x"-close
@@ -173,30 +187,16 @@ while True:
                 draw_path(path)
 
         if plot_scores:
-            if families[0].generations_passed % 5 == 0:
+            if families[0].generations_passed % 2 == 0:
                 score_data.append([families[0].generations_passed, families[0].family_score])
             if families[0].generations_passed == 100:
                 break
 
-        draw_text("sigma: %.10f" % families[0].sigma, (20, 20))
-        draw_text("best family score: %.5f" % families[0].family_score, (20, 40))
-        draw_text("number of families: %.0i" % len(families), (20, 60))
-        draw_text("generation: %.0i" % families[0].generations_passed, (20, 80))
+        draw_text("generation: %.0i" % families[0].generations_passed, (20, 20))
+        draw_text("best length: %.3f meters" % families[0].best_path.length(), (20, 40))
 
     p.display.flip()
     p.time.Clock().tick()  # caps frame rate at 100
 
 if plot_scores:
-    labels = []
-    scores = []
-    for gen, score in score_data:
-        labels.append(gen)
-        scores.append(score)
-
-    fig1, ax1 = plt.subplots()
-    ax1.plot(labels, scores)
-
-    plt.xlabel("generation")
-    plt.ylabel("score")
-
-    plt.show()
+    graph_scores(score_data)

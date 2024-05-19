@@ -19,6 +19,9 @@ class Path:
         if populate:
             self.populate()
 
+    def length(self):
+        return sum([mag(self.points[i] - self.points[i - 1]) for i in range(1, len(self.points))])
+
     def populate(self):
         waypoints = [self.start_point]
         self.points = []
@@ -51,8 +54,8 @@ class Path:
         return False
 
     def calculate_fitness(self):
-        length_score = sum([mag(self.points[i] - self.points[i - 1]) for i in range(1, len(self.points))])
-        num_points_score = len(self.points) * 0.02
+        length_score = self.length()
+        num_points_score = len(self.points) * 0.015
         return -length_score - num_points_score
 
     def update(self):
