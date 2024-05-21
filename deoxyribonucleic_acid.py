@@ -94,7 +94,7 @@ def get_mouse_xy_meters():
 
 
 def graph_scores(data):
-    """plots score as a function of the generation"""
+    """plots average path length as a function of the generation"""
     labels = []
     scores = []
     for gen, score in data:
@@ -105,7 +105,7 @@ def graph_scores(data):
     ax1.plot(labels, scores)
 
     plt.xlabel("generation")
-    plt.ylabel("score")
+    plt.ylabel("average length")
 
     plt.show()
 
@@ -204,7 +204,7 @@ while True:
 
         if plot_scores:  # record score data
             if families[0].generation % 1 == 0:
-                score_data.append([families[0].generation, families[0].family_score])
+                score_data.append([families[0].generation, abs(families[0].family_score)])  # abs(score) = path length
             if families[0].generation == 100:
                 break
 

@@ -1,6 +1,5 @@
 from engine import Ball
 from vectors import Vec
-import numpy as np
 
 
 class Family:
@@ -25,9 +24,11 @@ class Family:
     def sort(self):
         self.paths = sorted(self.paths, key=lambda x: x.fitness)
 
+    def get_average_length(self):
+        return sum([path.length() for path in self.paths]) / len(self.paths)
+
     def calculate_family_score(self):
-        score = sum([path.fitness for path in self.paths]) / len(self.paths)
-        return score
+        return -self.get_average_length()
 
     def update(self):
         for path in self.paths:
@@ -37,8 +38,7 @@ class Family:
         self.paths = sorted(self.paths, key=lambda x: x.fitness, reverse=True)
         self.generation += 1
 
-        avg_score = sum(path.fitness for path in self.paths) / len(self.paths)
-        self.family_score = avg_score  # careful with sign
+        self.family_score = self.calculate_family_score()
 
         num_children = self.population // 2
 
