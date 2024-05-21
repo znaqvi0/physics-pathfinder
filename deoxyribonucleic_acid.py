@@ -2,7 +2,6 @@ import sys  # most commonly used to turn the interpreter off (shut down your gam
 
 import pygame as p
 
-import field
 import obstacle_presets
 from engine import *
 from families import Family
@@ -17,7 +16,6 @@ font = p.font.SysFont('Monocraft', 20)
 screen_color = (100, 100, 100)
 ground_color = (150, 150, 150)  # (50, 200, 100)
 screen = p.display.set_mode((WIDTH, HEIGHT))
-# screen.fill((150, 210, 255))
 screen.fill(screen_color)
 p.display.set_caption('window')
 
@@ -32,6 +30,7 @@ obstacles = field.ObstacleMap()
 
 
 def ball_xy(ball):
+    """converts meter coordinates to pixel coordinates"""
     return float(origin[0] + ball.pos.x * scale), float(origin[1] - ball.pos.y * scale)
 
 
@@ -59,13 +58,6 @@ def draw_line(p1, p2, color=(0, 0, 0), width=1):
 
 def draw_rect(color, left_x, top_y, width, height):
     p.draw.rect(screen, color, (x0 + left_x * scale, y0 - top_y * scale, width * scale, height * scale))
-
-
-def draw_translucent(color, alpha, pos, width, height):
-    s = p.Surface((width * scale, height * scale))
-    s.set_alpha(alpha)
-    s.fill(color)
-    screen.blit(s, (x0 + pos.x * scale, y0 - pos.y * scale))
 
 
 def draw_obstacles(_obstacles: field.ObstacleMap):
@@ -102,6 +94,7 @@ def get_mouse_xy_meters():
 
 
 def graph_scores(data):
+    """plots score as a function of the generation"""
     labels = []
     scores = []
     for gen, score in data:
@@ -118,7 +111,7 @@ def graph_scores(data):
 
 
 # constants
-preset = obstacle_presets.maze
+preset = obstacle_presets.none
 
 pos0 = preset.start
 target_pos = preset.target
@@ -147,22 +140,39 @@ while True:
             p.quit()
             sys.exit()
         elif event.type == p.KEYDOWN:
-            if event.key == p.K_SPACE:
+            # --------------------preset choosing--------------------
+            if event.key == p.K_0:
+                preset = obstacle_presets.none
+            if event.key == p.K_1:
+                preset = obstacle_presets.maze
+            if event.key == p.K_2:
+                preset = obstacle_presets.circles2
+            if event.key == p.K_3:
+                preset = obstacle_presets.spiral2
+
+            pos0 = preset.start
+            target_pos = preset.target
+
+            obstacles.polygons = preset.polygons
+            # -------------------------------------------------------
+            if event.key == p.K_SPACE:  # start the program
                 running = not running
                 if populate:
                     families = []
                     for i in range(num_families):  # populate once all obstacles are drawn
                         families.append(Family(population // num_families, sigma, sigma_rate).populate(seed=random_path(pos0, target_pos)))
                     populate = False
+
             if event.key == p.K_z:
                 obstacles.undo()
-                draw_course(pos0, target_pos)
             if event.key == p.K_r:
                 obstacles.reset()
-                draw_course(pos0, target_pos)
             if event.key == p.K_n:
                 obstacles.new_poly()
 
+            draw_course(pos0, target_pos)
+
+    # edit obstacles based on mouse input
     mouse_pressed = p.mouse.get_pressed(num_buttons=3)
     if mouse_pressed[0]:
         obst_x, obst_y = get_mouse_xy_meters()
@@ -182,9 +192,9 @@ while True:
                 for family in families:
                     family.population = min(30, population // len(families))
 
-        # best_path = sorted(families, key=lambda fam: fam.best_path.fitness, reverse=True)[0].best_path
         screen.fill(screen_color)
         draw_course(pos0, target_pos)
+        # next generation
         for family in families:
             family.paths = family.next_gen()
             family.update()
@@ -192,18 +202,18 @@ while True:
             for path in family.paths:
                 draw_path(path)
 
-        if plot_scores:
-            if families[0].generations_passed % 2 == 0:
-                score_data.append([families[0].generations_passed, families[0].family_score])
-            if families[0].generations_passed == 100:
+        if plot_scores:  # record score data
+            if families[0].generation % 1 == 0:
+                score_data.append([families[0].generation, families[0].family_score])
+            if families[0].generation == 100:
                 break
 
-        draw_text("generation: %.0i" % families[0].generations_passed, (20, 20))
+        draw_text("generation: %.0i" % families[0].generation, (20, 20))
         draw_text("best length: %.3f meters" % families[0].best_path.length(), (20, 40))
 
     p.display.flip()
-    p.time.Clock().tick()  # caps frame rate at 100
+    p.time.Clock().tick()
 
-print(obstacles.polygons)
+print(obstacles.polygons)  # copy and paste the result of this into a new preset
 if plot_scores:
-    graph_scores(score_data)
+    graph_scores(score_data[1:])

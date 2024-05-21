@@ -20,9 +20,11 @@ class Path:
             self.populate()
 
     def length(self):
+        """return the length of the path, in meters"""
         return sum([mag(self.points[i] - self.points[i - 1]) for i in range(1, len(self.points))])
 
     def populate(self):
+        """initializes a valid path from start to target with the constraints of the obstacles"""
         waypoints = [self.start_point]
         self.points = []
         i = 0
@@ -33,13 +35,15 @@ class Path:
                 waypoints.append(vector)
                 i += 1
 
+        # use the current list to make a path with fewer points that are much farther apart  (much more efficient)
         j = 0
         new_waypoints = [self.start_point]
+        # sort by distance to start point
         sort_waypoints = sorted(waypoints, key=lambda pt: mag(pt - waypoints[j]), reverse=True)
         while intersect_map(new_waypoints[j], self.target_point, self.obstacles):
-            for k in reversed(range(len(sort_waypoints))):
+            for k in reversed(range(len(sort_waypoints))):  # search from farthest to closest point
                 if not intersect_map(new_waypoints[j], waypoints[k], self.obstacles):
-                    new_waypoints.append(waypoints[k])
+                    new_waypoints.append(waypoints[k])  # append the farthest point possible
                     j += 1
                     break
 
@@ -55,14 +59,18 @@ class Path:
 
     def calculate_fitness(self):
         length_score = self.length()
-        num_points_score = len(self.points) * 0.02
-        return -length_score - num_points_score
+        num_points_score = len(self.points) * 0.02  # prevent unnecessary points from slowing the program
+        return -length_score - num_points_score  # punish paths that are long or have too many waypoints
 
     def update(self):
         self.fitness = self.calculate_fitness()
         self.done = True
 
     def varied_copy(self, sigma, dropout=True, dropout_val=0.5):
+        """
+        returns a path that is varied from the original path
+        possible changes: number of waypoints, waypoint positions
+        """
         path = Path(self.start_point, self.target_point, self.obstacles, self.color)
         path.points = [self.start_point]
 
@@ -89,7 +97,7 @@ class Path:
         return path
 
 
-class Ball:
+class Ball:  # this class is here mostly because the code to display circles uses it
     def __init__(self, position, velocity, radius, mass, color=(0, 0, 0)):
         self.v = velocity
         self.v0 = self.v.copy()
@@ -103,7 +111,7 @@ class Ball:
         self.t = 0
 
     def __repr__(self):
-        return f"v0={self.v0}"
+        return f"pos={self.pos}"
 
     def move(self):
         self.pos += self.v * dt

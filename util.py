@@ -24,6 +24,10 @@ def intersect_map(A, B, map: field.ObstacleMap):
 
 
 def next_vector(point, obstacles, vec_generator, recur):
+    """
+    repeatedly generates a vector until a valid one is found or the maximum number of iterations is reached
+    param: vec_generator is the function to evaluate when attempting to generate a valid vector
+    """
     if recur <= 0:
         return point
     vector = vec_generator()
@@ -39,6 +43,7 @@ def vec_gauss_2d(vec, sigma):
 
 
 def gauss_point_between(p1, p2, sigma):
+    """returns a vector initially along the segment defined by p1, p2, then varied by sigma"""
     displacement = p2 - p1
     return vec_gauss_2d(p1 + norm(displacement) * random.uniform(0, mag(displacement)), sigma)
 

@@ -11,6 +11,8 @@ class Preset:
 
 none = Preset(field.START_POS, field.TARGET_POS, [[]])
 
+# the data in here is copied and pasted after manually drawing the obstacles and printing them to the console
+
 two_families = Preset(field.START_POS, field.TARGET_POS, polygons=[
     [Vec(1.25, 10.15, 0.0), Vec(1.625, 10.525, 0.0), Vec(2.125, 10.775, 0.0), Vec(2.625, 10.850000000000001, 0.0),
      Vec(3.1504, 10.625, 0.0), Vec(3.5, 10.200000000000001, 0.0),

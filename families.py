@@ -7,7 +7,7 @@ class Family:
     def __init__(self, population, sigma, sigma_rate):
         self.family_score = 0
         self.paths = []
-        self.generations_passed = 0
+        self.generation = 1
         self.population = population
         self.sigma = sigma
         self.best_path = Ball(Vec(), Vec(), 1, 1)
@@ -33,15 +33,9 @@ class Family:
         for path in self.paths:
             path.update()
 
-    def all_done(self):
-        for path in self.paths:
-            if not path.done:
-                return False
-        return True
-
     def next_gen(self):
         self.paths = sorted(self.paths, key=lambda x: x.fitness, reverse=True)
-        self.generations_passed += 1
+        self.generation += 1
 
         avg_score = sum(path.fitness for path in self.paths) / len(self.paths)
         self.family_score = avg_score  # careful with sign
