@@ -4,7 +4,7 @@ import field
 from vectors import Vec, norm, mag
 
 
-def ccw(A, B, C):  # works for Vec because Vec has x and y attributes
+def ccw(A, B, C):
     # https://stackoverflow.com/questions/3838329/how-can-i-check-if-two-segments-intersect
     return (C.y - A.y) * (B.x - A.x) > (B.y - A.y) * (C.x - A.x)
 
@@ -25,8 +25,8 @@ def intersect_map(A, B, map: field.ObstacleMap):
 
 def next_vector(point, obstacles, vec_generator, recur):
     """
-    repeatedly generates a vector until a valid one is found or the maximum number of iterations is reached
-    param: vec_generator is the function to evaluate when attempting to generate a valid vector
+    generates a random vector until a valid one is found or the maximum number of iterations is reached
+    param: vec_generator is the function to evaluate when generating a new vector
     """
     if recur <= 0:
         return point
@@ -43,7 +43,7 @@ def vec_gauss_2d(vec, sigma):
 
 
 def gauss_point_between(p1, p2, sigma):
-    """returns a vector initially along the segment defined by p1, p2, then varied by sigma"""
+    """returns a random vector along the segment defined by (p1, p2), varied by sigma"""
     displacement = p2 - p1
     return vec_gauss_2d(p1 + norm(displacement) * random.uniform(0, mag(displacement)), sigma)
 

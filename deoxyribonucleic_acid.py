@@ -1,7 +1,9 @@
+import random
 import sys  # most commonly used to turn the interpreter off (shut down your game)
 
 import pygame as p
 
+import field
 import obstacle_presets
 from engine import *
 from families import Family
@@ -129,7 +131,7 @@ families = []
 
 score_data = []
 plot_scores = True
-
+num_iterations = 100  # used if plot_scores is True
 
 draw_course(pos0, target_pos)
 running = False
@@ -194,6 +196,7 @@ while True:
 
         screen.fill(screen_color)
         draw_course(pos0, target_pos)
+
         # next generation
         for family in families:
             family.paths = family.next_gen()
@@ -205,7 +208,7 @@ while True:
         if plot_scores:  # record score data
             if families[0].generation % 1 == 0:
                 score_data.append([families[0].generation, abs(families[0].family_score)])  # abs(score) = path length
-            if families[0].generation == 100:
+            if families[0].generation == num_iterations:
                 break
 
         draw_text("generation: %.0i" % families[0].generation, (20, 20))

@@ -14,13 +14,6 @@ BOTTOM_WALL = 0
 RIGHT_WALL = WIDTH
 TOP_WALL = HEIGHT
 
-LEFT_WALL_NORM = Vec(1, 0)
-RIGHT_WALL_NORM = Vec(-1, 0)
-TOP_WALL_NORM = Vec(0, -1)
-BOTTOM_WALL_NORM = Vec(0, 1)
-
-WALL_RANDOMNESS = lambda: random.gauss(0, 0.1)
-
 
 class ObstacleMap:
     def __init__(self):

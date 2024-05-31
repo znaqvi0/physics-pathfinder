@@ -1,7 +1,3 @@
-from engine import Ball
-from vectors import Vec
-
-
 class Family:
     def __init__(self, population, sigma, sigma_rate):
         self.family_score = 0
@@ -9,7 +5,7 @@ class Family:
         self.generation = 1
         self.population = population
         self.sigma = sigma
-        self.best_path = Ball(Vec(), Vec(), 1, 1)
+        self.best_path = None
         self.last_family = False
         self.sigma_rate = sigma_rate
 

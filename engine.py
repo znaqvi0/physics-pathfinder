@@ -1,10 +1,5 @@
-import random
-
-import field
 from util import intersect_map, next_vector, vec_gauss_2d, probability, gauss_point_between
 from vectors import *
-
-dt = 0.01  # 0.001
 
 
 class Path:
@@ -20,11 +15,13 @@ class Path:
             self.populate()
 
     def length(self):
-        """return the length of the path, in meters"""
+        """returns the length of the path in meters"""
         return sum([mag(self.points[i] - self.points[i - 1]) for i in range(1, len(self.points))])
 
     def populate(self):
-        """initializes a valid path from start to target with the constraints of the obstacles"""
+        """initializes a valid path from start to target with the obstacles as constraints"""
+
+        # random (constrained) walk from start to target
         waypoints = [self.start_point]
         self.points = []
         i = 0
@@ -35,7 +32,7 @@ class Path:
                 waypoints.append(vector)
                 i += 1
 
-        # use the current list to make a path with fewer points that are much farther apart  (much more efficient)
+        # find a (simpler) path from start to target by iteratively finding the farthest valid waypoint
         j = 0
         new_waypoints = [self.start_point]
         # sort by distance to start point
@@ -60,7 +57,7 @@ class Path:
     def calculate_fitness(self):
         length_score = self.length()
         num_points_score = len(self.points) * 0.02  # prevent unnecessary points from slowing the program
-        return -length_score - num_points_score  # punish paths that are long or have too many waypoints
+        return -length_score - num_points_score  # punish paths for length/number of waypoints
 
     def update(self):
         self.fitness = self.calculate_fitness()
@@ -68,7 +65,7 @@ class Path:
 
     def varied_copy(self, sigma, dropout=True, dropout_val=0.5):
         """
-        returns a path that is varied from the original path
+        copies the current path with variation
         possible changes: number of waypoints, waypoint positions
         """
         path = Path(self.start_point, self.target_point, self.obstacles, self.color)
@@ -112,40 +109,3 @@ class Ball:  # this class is here mostly because the code to display circles use
 
     def __repr__(self):
         return f"pos={self.pos}"
-
-    def move(self):
-        self.pos += self.v * dt
-        self.a = self.force() / self.m
-        self.v += self.a * dt
-
-    def distance_from_target(self, target_pos):
-        return mag(self.pos - target_pos)
-
-    def force(self):  # path following algorithm (force toward next point + wheel friction)
-        return Vec()
-
-    def collide_with_wall(self, wall_norm, sigma):
-        randomized_wall_norm = wall_norm.rotate(random.gauss(0, sigma), degrees=True)
-        self.pos -= self.v * dt
-        self.v -= (2 * self.v.dot(wall_norm) * randomized_wall_norm)
-        self.v *= 1 - 0.2 * abs(norm(self.v).dot(randomized_wall_norm))
-
-    def check_walls(self):
-        if self.pos.x < field.LEFT_WALL:
-            self.collide_with_wall(field.LEFT_WALL_NORM, field.WALL_RANDOMNESS())
-        elif self.pos.x > field.RIGHT_WALL:
-            self.collide_with_wall(field.RIGHT_WALL_NORM, field.WALL_RANDOMNESS())
-        if self.pos.y < field.BOTTOM_WALL:
-            self.collide_with_wall(field.BOTTOM_WALL_NORM, field.WALL_RANDOMNESS())
-        elif self.pos.y > field.TOP_WALL:
-            self.collide_with_wall(field.TOP_WALL_NORM, field.WALL_RANDOMNESS())
-
-    def update(self):
-        if mag(self.v) > 0.005:  # check if close enough to target
-            self.check_walls()
-            self.move()
-            self.t += dt
-            return
-        elif not self.done:
-            # code for when ball is done
-            self.done = True
